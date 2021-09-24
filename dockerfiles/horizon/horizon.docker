@@ -1,0 +1,15 @@
+FROM php:7.1-fpm
+
+RUN apt-get update && apt-get install -y libmcrypt-dev mariadb-client libxml2-dev zlib1g-dev \
+    && docker-php-ext-install mcrypt pdo_mysql pcntl posix soap simplexml zip \
+    && docker-php-ext-configure pcntl --enable-pcntl 
+
+
+COPY dockerfiles/horizon/horizon.sh /opt/bin/entrypoint.sh
+RUN chmod +x /opt/bin/entrypoint.sh
+
+CMD ["/opt/bin/entrypoint.sh"]
+
+ADD ./dockerfiles/php/limits.conf /usr/local/etc/php-fpm.d/limits.conf
+
+WORKDIR /var/www

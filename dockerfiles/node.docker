@@ -1,0 +1,6 @@
+FROM node:9.5.0
+
+WORKDIR /var/www
+
+CMD ["rm", "-rf", "node_modules"]
+CMD ["npm", "install"]

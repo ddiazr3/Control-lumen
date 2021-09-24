@@ -1,0 +1,18 @@
+FROM php:7.1-fpm
+
+ENV TZ="/usr/share/zoneinfo/America/Guatemala"
+
+RUN apt-get update && apt-get install -y libmcrypt-dev mariadb-client zlib1g-dev libxml2-dev \
+    && docker-php-ext-install mcrypt pdo_mysql zip soap simplexml pcntl \
+    && docker-php-ext-configure pcntl --enable-pcntl
+
+ADD ./dockerfiles/php/limits.conf /usr/local/etc/php-fpm.d/limits.conf
+
+WORKDIR /var/www
+
+COPY dockerfiles/scheduler/scheduler.sh /opt/bin/entrypoint.sh
+RUN chmod +x /opt/bin/entrypoint.sh
+
+CMD ["/opt/bin/entrypoint.sh"]
+
+WORKDIR /var/www
