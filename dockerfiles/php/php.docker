@@ -8,7 +8,8 @@ RUN echo 'alias cda="composer dump-autoload"' >> ~/.bashrc
 
 RUN apt-get update && apt-get install -y libmcrypt-dev mariadb-client zlib1g-dev libxml2-dev
 #RUN docker-php-ext-install zip
-#RUN docker-php-ext-configure pcntl --enable-pcntl docker-php-ext-install mcrypt pdo_mysql zip soap simplexml pcntl
+# Instalar manual mente cada una docker-php-ext-install pdo_mysql zip soap simplexml pcntl
+#RUN docker-php-ext-configure pcntl --enable-pcntl  mcrypt pdo_mysql zip soap simplexml pcntl
 
  # && docker-php-ext-configure pcntl --enable-pcntl
 
