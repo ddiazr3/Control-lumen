@@ -14,4 +14,20 @@ class Usuario extends Model
 
     protected $guarded = ["id"];
     protected $table = "usuario";
+
+    public function roles()
+    {
+		return $this->belongsToMany(Role::class, 'roles_usuarios');
+    }
+
+	public function roleIds()
+    {
+		return $this->roles->pluck('id')->toArray();
+	}
+
+    public function empresa()
+    {
+		return $this->hasOne(Empresa::class, 'id','empresaid');
+    }
+
 }

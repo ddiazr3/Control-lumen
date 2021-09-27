@@ -74,7 +74,8 @@ $app->configure('app');
 
  $app->middleware([
 //     App\Http\Middleware\ExampleMiddleware::class
-     'Vluzrmos\LumenCors\CorsMiddleware'
+    // 'Vluzrmos\LumenCors\CorsMiddleware'
+    'Nord\Lumen\Cors\CorsMiddleware'
  ]);
 
 // $app->routeMiddleware([
@@ -95,6 +96,8 @@ $app->configure('app');
 // $app->register(App\Providers\AppServiceProvider::class);
 // $app->register(App\Providers\AuthServiceProvider::class);
 // $app->register(App\Providers\EventServiceProvider::class);
+$app->register('Nord\Lumen\Cors\CorsServiceProvider');
+
 
 /*
 |--------------------------------------------------------------------------

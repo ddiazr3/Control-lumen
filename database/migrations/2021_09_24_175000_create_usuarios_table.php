@@ -17,8 +17,8 @@ class CreateUsuariosTable extends Migration
             $table->id();
             $table->string('nombre');
             $table->string('direccion');
-            $table->string('nit')->unique();
-            $table->string('telefono')->unique();
+            $table->string('nit', 20);
+            $table->string('telefono', 15);
             $table->timestamps();
         });
 
@@ -26,8 +26,9 @@ class CreateUsuariosTable extends Migration
             $table->id();
             $table->string('nombre');
             $table->string('apellido');
-            $table->string('dpi')->nullable()->unique();
-            $table->string('telefono')->unique();
+            $table->string('correo');
+            $table->string('dpi',20)->nullable();
+            $table->string('telefono',15);
             $table->string('direccion');
             $table->string('token')->nullable();
             $table->foreignId('empresaid')
