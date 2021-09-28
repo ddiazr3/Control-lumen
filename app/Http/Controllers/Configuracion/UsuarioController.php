@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Configuracion;
 use App\Http\Controllers\Controller;
 use App\Models\Empresa;
 use App\Models\Role;
+use App\Models\RoleUsuarios;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
@@ -30,6 +32,11 @@ class UsuarioController extends Controller
 
         }else{
             $usuarios = Usuario::paginate(10);
+        }
+
+        foreach ($usuarios as $u){
+            $u->idcrypt = Crypt::encrypt($u->id);
+            $u->rolesid = $u->roleIds();
         }
 
         return response()->json($usuarios);
@@ -70,7 +77,45 @@ class UsuarioController extends Controller
                 'message' => $validator->errors()
             ], 404);
         }
+        if(isset($request->usuario['idcrypt']) and $request->usuario['idcrypt']){
+            $usuario = Usuario::find(Crypt::decrypt($request->usuario['idcrypt']));
+        }else{
+            $usuario = new Usuario();
+        }
+        $usuario->nombre = $request->usuario['nombre'];
+        $usuario->apellido = $request->usuario['apellido'];
+        $usuario->correo = $request->usuario['correo'];
+        $usuario->dpi = $request->usuario['dpi'];
+        $usuario->telefono = $request->usuario['telefono'];
+        $usuario->direccion = $request->usuario['direccion'];
+        $usuario->empresaid = $request->usuario['empresaid'];
+        $usuario->save();
 
+        if(isset($request->usuario['idcrypt']) and $request->usuario['idcrypt']){
+            $roleUsuarioDeleted = RoleUsuarios::where('usuarioid', $usuario->id)->get();
+            foreach ($roleUsuarioDeleted as $rd){
+                $rd->delete();
+            }
+        }
+
+        //agregandoRol
+        $roles = $request->usuario['rolesid'];
+        foreach ($roles as $role){
+            $roleUsuario = new RoleUsuarios();
+            $roleUsuario->usuarioid = $usuario->id;
+            $roleUsuario->roleid = $role;
+            $roleUsuario->save();
+        }
+        return response()->json(200);
+    }
+
+    public function edit($id)
+    {
+        $id = Crypt::decrypt($id);
+        $usuarios = Usuario::find($id);
+        $usuarios->idcrypt = Crypt::encrypt($id);
+        $usuarios->rolesid = $usuarios->roleIds();
+        return response()->json($usuarios);
     }
 
     public function catalogos()

@@ -7,6 +7,5 @@ use Illuminate\Database\Eloquent\Model;
 class RoleUsuarios extends Model
 {
     protected $table = "roles_usuarios";
-
-    protected $timestamp = false;
+    public $timestamps = false;
 }
