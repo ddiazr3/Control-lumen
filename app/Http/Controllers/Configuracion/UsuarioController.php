@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Configuracion;
 
+use App\Exports\SolicitudEntregaExport;
+use App\Exports\UsuarioExport;
 use App\Http\Controllers\Controller;
 use App\Models\Empresa;
 use App\Models\Role;
@@ -11,12 +13,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade as PDF;
 
 class UsuarioController extends Controller
 {
     public function index(Request $request)
     {
-
         if (isset($request->search))
         {
             // 1 nombre, 2 telefono, 3 Dpi
@@ -129,5 +132,81 @@ class UsuarioController extends Controller
         ];
 
         return response()->json($data);
+    }
+
+    public function eliminar($id)
+    {
+
+        $usuarios = Usuario::find($id);
+        $usuarios->activo = false;
+        $usuarios->update();
+        return response()->json($usuarios);
+    }
+
+    public function activar($id)
+    {
+        $usuarios = Usuario::find($id);
+        $usuarios->activo = true;
+        $usuarios->update();
+        return response()->json($usuarios);
+    }
+
+    public function exportar(Request $request){
+
+        $usuarios = Usuario::with(['roles']);
+
+        if (isset($request->search))
+        {
+            // 1 nombre, 2 telefono, 3 Dpi
+            switch ($request->item0) {
+                case '1' : $usuarios = $usuarios->where('usuario.nombre','like','%'.$request->datobuscar.'%');
+                    break;
+                case '2' : $usuarios = $usuarios->where('usuario.apellido','like', '%'.$request->datobuscar.'%');
+                    break;
+                case '3' : $usuarios = $usuarios->where('usuario.telefono', 'like','%'.$request->datobuscar.'%');
+                    break;
+            }
+        }
+
+        $usuarios = $usuarios->get();
+
+        $dataExport = [];
+
+        foreach ($usuarios as $u){
+           $nameRoles = "";
+            if($u->roles){
+                foreach ($u->roles as $ur){
+                    $nameRoles .= $ur->nombre." - ";
+                }
+            }
+            $dataExportInstance = [
+                "nombres" => $u->nombre,
+                "apellido" => $u->apellido,
+                "telefono"  => $u->telefono,
+                "direccion" => $u->direccion,
+                "roles" => $nameRoles
+            ];
+            array_push($dataExport, $dataExportInstance);
+
+        }
+
+        return Excel::download(new UsuarioExport(collect($dataExport)),'usuarios.xlsx');
+    }
+
+    //EJEMPLO DE COMO EXPORTAR PDF
+    public function exportPDF(Request $request)
+    {
+        $nombre = $request->nombre;
+        $contxt = stream_context_create([
+            'ssl' => [
+                'verify_peer' => FALSE,
+                'verify_peer_name' => FALSE,
+                'allow_self_signed'=> TRUE
+            ]
+        ]);
+        $pdf = PDF::setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true]);
+        $pdf->getDomPDF()->setHttpContext($contxt);
+        $pdf = PDF::loadView('pdf.test',["nombre" => $nombre]);
+        return $pdf->download('test.pdf');
     }
 }

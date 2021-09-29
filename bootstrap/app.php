@@ -98,7 +98,7 @@ $app->configure('app');
 // $app->register(App\Providers\EventServiceProvider::class);
 $app->register('Nord\Lumen\Cors\CorsServiceProvider');
 
-
+//Maatwebsite\Excel\ExcelServiceProvider::class
 /*
 |--------------------------------------------------------------------------
 | Load The Application Routes
@@ -115,6 +115,9 @@ $app->router->group([
 ], function ($router) {
     require __DIR__.'/../routes/web.php';
 });
+
 $app->register(Flipbox\LumenGenerator\LumenGeneratorServiceProvider::class);
+$app->register(Maatwebsite\Excel\ExcelServiceProvider::class);
+$app->register(Barryvdh\DomPDF\ServiceProvider::class);
 
 return $app;

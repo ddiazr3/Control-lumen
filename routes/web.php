@@ -23,5 +23,10 @@ $router->get('/', function () use ($router) {
 $router->get('/api/usuarios','Configuracion\UsuarioController@index');
 $router->post('/api/usuarios','Configuracion\UsuarioController@store');
 $router->get('/api/usuarios/{id}/edit','Configuracion\UsuarioController@edit');
+$router->post('/api/usuarios/{id}/eliminar','Configuracion\UsuarioController@eliminar');
+$router->post('/api/usuarios/{id}/activar','Configuracion\UsuarioController@activar');
+$router->post('/api/usuarios/exportar','Configuracion\UsuarioController@exportar');
+$router->post('/api/usuarios/exportarPDF','Configuracion\UsuarioController@exportPDF'); // EJEMPLO DE COMO EXPORTAR PDF
+
 
 $router->get('/api/usuarios/catalogos','Configuracion\UsuarioController@catalogos');
