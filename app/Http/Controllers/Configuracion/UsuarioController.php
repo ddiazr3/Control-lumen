@@ -209,4 +209,8 @@ class UsuarioController extends Controller
         $pdf = PDF::loadView('pdf.test',["nombre" => $nombre]);
         return $pdf->download('test.pdf');
     }
+
+    public function sendMessage(Request $request){
+        event(new \App\Events\MessageEvent($request->message));
+    }
 }

@@ -28,5 +28,7 @@ $router->post('/api/usuarios/{id}/activar','Configuracion\UsuarioController@acti
 $router->post('/api/usuarios/exportar','Configuracion\UsuarioController@exportar');
 $router->post('/api/usuarios/exportarPDF','Configuracion\UsuarioController@exportPDF'); // EJEMPLO DE COMO EXPORTAR PDF
 
+$router->get('/api/message','Configuracion\UsuarioController@message');
+$router->post('/api/message','Configuracion\UsuarioController@message');
 
 $router->get('/api/usuarios/catalogos','Configuracion\UsuarioController@catalogos');
