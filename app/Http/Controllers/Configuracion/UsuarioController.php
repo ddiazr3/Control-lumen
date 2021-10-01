@@ -11,6 +11,7 @@ use App\Models\RoleUsuarios;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
@@ -49,6 +50,7 @@ class UsuarioController extends Controller
 
         $rules    = [
             'usuario.nombre'    => 'required',
+            'usuario.contrasenia' => 'required',
             'usuario.apellido'  => 'required',
             'usuario.correo'    => 'required|email',
             'usuario.dpi'       => 'required|numeric',
@@ -60,6 +62,7 @@ class UsuarioController extends Controller
 
         $messages = [
             'usuario.nombre.required'        => 'El nombre es requerido',
+            'usuario.contrasenia.required'        => 'La contraseña es requerido',
             'usuario.apellido.required'      => 'El apellido es requerido',
             'usuario.correo.required'        => 'El correo es requerida',
             'usuario.dpi.required'           => 'El dpi es requerido',
@@ -84,6 +87,7 @@ class UsuarioController extends Controller
             $usuario = Usuario::find(Crypt::decrypt($request->usuario['idcrypt']));
         }else{
             $usuario = new Usuario();
+            $usuario->password = Hash::make($request->usuario['contrasenia']);
         }
         $usuario->nombre = $request->usuario['nombre'];
         $usuario->apellido = $request->usuario['apellido'];

@@ -21,11 +21,10 @@ $router->get('/', function () use ($router) {
 });
 
 
-$router->get('/api/modulos','Configuracion\ModuloController@index');
-$router->post('/api/modulos','Configuracion\ModuloController@store');
-$router->get('/api/modulos/{id}/edit','Configuracion\ModuloController@edit');
-$router->post('/api/modulos/{id}/eliminar','Configuracion\ModuloController@eliminar');
-$router->post('/api/modulos/{id}/activar','Configuracion\ModuloController@activar');
+$router->get('/api/roles','Configuracion\RoleController@index');
+$router->post('/api/roles','Configuracion\RoleController@store');
+$router->get('/api/roles/{id}/edit','Configuracion\RoleController@edit');
+$router->post('/api/roles/{id}/eliminar','Configuracion\RoleController@eliminar');
 
 $router->get('/api/usuarios','Configuracion\UsuarioController@index');
 $router->post('/api/usuarios','Configuracion\UsuarioController@store');
@@ -39,3 +38,4 @@ $router->get('/api/message','Configuracion\UsuarioController@message');
 $router->post('/api/message','Configuracion\UsuarioController@message');
 
 $router->get('/api/usuarios/catalogos','Configuracion\UsuarioController@catalogos');
+$router->get('/api/roles/catalogos','Configuracion\RoleController@catalogos');

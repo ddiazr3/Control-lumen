@@ -17,7 +17,7 @@ class CreateRolModulesPermisosTable extends Migration
             $table->id();
             $table->foreignId('roleid')
                 ->nullable()
-                ->constrained('modulos')
+                ->constrained('roles')
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
             $table->foreignId('modulepermisoid')

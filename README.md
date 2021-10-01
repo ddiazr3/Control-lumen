@@ -22,3 +22,22 @@ If you discover a security vulnerability within Lumen, please send an e-mail to 
 ## License
 
 The Lumen framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+
+Problem 1
+- phpoffice/phpspreadsheet is locked to version 1.18.0 and an update of this package was not requested.
+- phpoffice/phpspreadsheet 1.18.0 requires ext-gd * -> it is missing from your system. Install or enable PHP's gd extension.
+Problem 2
+- phpoffice/phpspreadsheet 1.18.0 requires ext-gd * -> it is missing from your system. Install or enable PHP's gd extension.
+- maatwebsite/excel 3.1.33 requires phpoffice/phpspreadsheet ^1.18 -> satisfiable by phpoffice/phpspreadsheet[1.18.0].
+- maatwebsite/excel is locked to version 3.1.33 and an update of this package was not requested.
+
+To enable extensions, verify that they are enabled in your .ini files:
+-
+- /usr/local/etc/php/conf.d/docker-php-ext-pcntl.ini
+- /usr/local/etc/php/conf.d/docker-php-ext-pdo_mysql.ini
+- /usr/local/etc/php/conf.d/docker-php-ext-soap.ini
+- /usr/local/etc/php/conf.d/docker-php-ext-sodium.ini
+- /usr/local/etc/php/conf.d/limits.ini
+You can also run `php --ini` inside terminal to see which files are used by PHP in CLI mode.
+root@23e1c215cbed:/var/www# php artisan db:seed 
