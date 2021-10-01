@@ -1,9 +1,10 @@
 FROM php:7.4-fpm
 ENV TZ="/usr/share/zoneinfo/America/Guatemala"
-# RUN echo 'alias migrate="php artisan migrate"' >> ~/.bashrc
-# RUN echo 'alias rollback="php artisan migrate:rollback"' >> ~/.bashrc
-# RUN echo 'alias seed="php artisan db:seed"' >> ~/.bashrc
-# RUN echo 'alias seedgod="php artisan db:seed --class=GodSeeder"' >> ~/.bashrc
+RUN echo 'alias migrate="php artisan migrate"' >> ~/.bashrc
+RUN echo 'alias rollback="php artisan migrate:rollback"' >> ~/.bashrc
+RUN echo 'alias seed="php artisan db:seed"' >> ~/.bashrc
+RUN echo 'alias seedgod="php artisan db:seed --class=InicialSeeder"' >> ~/.bashrc
+RUN echo 'alias seedgod="php artisan db:seed --class=GodSeeder"' >> ~/.bashrc
 RUN echo 'alias cda="composer dump-autoload"' >> ~/.bashrc
 
 RUN apt-get update && apt-get install -y libmcrypt-dev mariadb-client zlib1g-dev libxml2-dev

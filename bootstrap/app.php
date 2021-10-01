@@ -109,10 +109,7 @@ $app->register('Nord\Lumen\Cors\CorsServiceProvider');
 | can respond to, as well as the controllers that may handle them.
 |
 */
-$app->register(Flipbox\LumenGenerator\LumenGeneratorServiceProvider::class);
-$app->register(Maatwebsite\Excel\ExcelServiceProvider::class);
-$app->register(Barryvdh\DomPDF\ServiceProvider::class);
-//$app->register(\Illuminate\Redis\RedisServiceProvider::class);
+
 
 $app->router->group([
     'namespace' => 'App\Http\Controllers',
@@ -120,6 +117,9 @@ $app->router->group([
     require __DIR__.'/../routes/web.php';
 });
 
-
+$app->register(Flipbox\LumenGenerator\LumenGeneratorServiceProvider::class);
+$app->register(Maatwebsite\Excel\ExcelServiceProvider::class);
+$app->register(Barryvdh\DomPDF\ServiceProvider::class);
+//$app->register(\Illuminate\Redis\RedisServiceProvider::class);
 
 return $app;

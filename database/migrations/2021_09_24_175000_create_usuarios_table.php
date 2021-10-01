@@ -30,6 +30,7 @@ class CreateUsuariosTable extends Migration
             $table->string('dpi',20)->nullable();
             $table->string('telefono',15);
             $table->string('direccion');
+            $table->string('password');
             $table->string('token')->nullable();
             $table->foreignId('empresaid')
                 ->nullable()

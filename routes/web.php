@@ -20,6 +20,13 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
+
+$router->get('/api/modulos','Configuracion\ModuloController@index');
+$router->post('/api/modulos','Configuracion\ModuloController@store');
+$router->get('/api/modulos/{id}/edit','Configuracion\ModuloController@edit');
+$router->post('/api/modulos/{id}/eliminar','Configuracion\ModuloController@eliminar');
+$router->post('/api/modulos/{id}/activar','Configuracion\ModuloController@activar');
+
 $router->get('/api/usuarios','Configuracion\UsuarioController@index');
 $router->post('/api/usuarios','Configuracion\UsuarioController@store');
 $router->get('/api/usuarios/{id}/edit','Configuracion\UsuarioController@edit');

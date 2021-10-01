@@ -3,10 +3,10 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Eloquent\Model;
 
-class DatabaseSeeder extends Seeder
+class GodSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -16,10 +16,10 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         Schema::disableForeignKeyConstraints();
-         $this->call(PermisosSeeder::class);
-         $this->call(ModulosSeeder::class);
-         $this->call(ModuloPermisosSeeder::class);
-        Model::reguard();
+        DB::statement('DELETE FROM rol_modules_permisos WHERE roleid=1');
+
+        DB::statement('INSERT INTO rol_modules_permisos (roleid, modulepermisoid, created_at, updated_at)
+				SELECT 1, id , NOW(), NOW() FROM modules_permisos');
         Schema::enableForeignKeyConstraints();
     }
 }
