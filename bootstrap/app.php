@@ -120,6 +120,5 @@ $app->router->group([
 $app->register(Flipbox\LumenGenerator\LumenGeneratorServiceProvider::class);
 $app->register(Maatwebsite\Excel\ExcelServiceProvider::class);
 $app->register(Barryvdh\DomPDF\ServiceProvider::class);
-//$app->register(\Illuminate\Redis\RedisServiceProvider::class);
 
 return $app;

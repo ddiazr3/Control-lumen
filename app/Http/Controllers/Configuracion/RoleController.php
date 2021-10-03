@@ -26,7 +26,7 @@ class RoleController extends Controller
         {
             // 1 nombre
             switch ($request->item0) {
-                case '1' : $roles = Role::with('empresa')->where('nombre','like','%'.$request->datobuscar.'%')->paginate(10);
+                case '1' : $roles = Role::with('empresa')->where('id','<>', 1)->where('nombre','like','%'.$request->datobuscar.'%')->paginate(10);
                     break;
                 case '2' : $roles = Role::with(['empresa' => function($query) use ($request){
                     $query->where('nombre','like','%'.$request->datobuscar.'%');
@@ -35,7 +35,7 @@ class RoleController extends Controller
             }
 
         }else{
-            $roles = Role::with('empresa')->paginate(10);
+            $roles = Role::with('empresa')->where('id','<>', 1)->paginate(10);
         }
 
         foreach ($roles as $r){

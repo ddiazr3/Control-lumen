@@ -26,6 +26,12 @@ $router->post('/api/roles','Configuracion\RoleController@store');
 $router->get('/api/roles/{id}/edit','Configuracion\RoleController@edit');
 $router->post('/api/roles/{id}/eliminar','Configuracion\RoleController@eliminar');
 
+$router->get('/api/empresas','Configuracion\EmpresaController@index');
+$router->post('/api/empresas','Configuracion\EmpresaController@store');
+$router->get('/api/empresas/{id}/edit','Configuracion\EmpresaController@edit');
+$router->post('/api/empresas/{id}/eliminar','Configuracion\EmpresaController@eliminar');
+$router->post('/api/empresas/{id}/activar','Configuracion\EmpresaController@activar');
+
 $router->get('/api/usuarios','Configuracion\UsuarioController@index');
 $router->post('/api/usuarios','Configuracion\UsuarioController@store');
 $router->get('/api/usuarios/{id}/edit','Configuracion\UsuarioController@edit');
@@ -33,6 +39,7 @@ $router->post('/api/usuarios/{id}/eliminar','Configuracion\UsuarioController@eli
 $router->post('/api/usuarios/{id}/activar','Configuracion\UsuarioController@activar');
 $router->post('/api/usuarios/exportar','Configuracion\UsuarioController@exportar');
 $router->post('/api/usuarios/exportarPDF','Configuracion\UsuarioController@exportPDF'); // EJEMPLO DE COMO EXPORTAR PDF
+$router->post('/api/usuarios/login','Configuracion\UsuarioController@login');
 
 $router->get('/api/message','Configuracion\UsuarioController@message');
 $router->post('/api/message','Configuracion\UsuarioController@message');

@@ -21,6 +21,7 @@ class ModuloPermisosSeeder extends Seeder
         //modulos padres no se colocan solo los de funcionalidades
         $this->add(3,[1,2,3,4,5]);
         $this->add(4);
+        $this->add(5);
 
         DB::table('modules_permisos')->insert($this->inserts);
         DB::statement('UPDATE modules_permisos SET created_at=NOW(), updated_at=NOW()');
