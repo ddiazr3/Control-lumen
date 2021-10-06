@@ -20,29 +20,33 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
+$router->group(['middleware' => 'auth','prefix' => 'api'], function () use ($router) {
+    $router->get('roles','Configuracion\RoleController@index');
+    $router->post('roles','Configuracion\RoleController@store');
+    $router->get('roles/{id}/edit','Configuracion\RoleController@edit');
+    $router->post('roles/{id}/eliminar','Configuracion\RoleController@eliminar');
 
-$router->get('/api/roles','Configuracion\RoleController@index');
-$router->post('/api/roles','Configuracion\RoleController@store');
-$router->get('/api/roles/{id}/edit','Configuracion\RoleController@edit');
-$router->post('/api/roles/{id}/eliminar','Configuracion\RoleController@eliminar');
+    $router->get('empresas','Configuracion\EmpresaController@index');
+    $router->post('empresas','Configuracion\EmpresaController@store');
+    $router->get('empresas/{id}/edit','Configuracion\EmpresaController@edit');
+    $router->post('empresas/{id}/eliminar','Configuracion\EmpresaController@eliminar');
+    $router->post('empresas/{id}/activar','Configuracion\EmpresaController@activar');
 
-$router->get('/api/empresas','Configuracion\EmpresaController@index');
-$router->post('/api/empresas','Configuracion\EmpresaController@store');
-$router->get('/api/empresas/{id}/edit','Configuracion\EmpresaController@edit');
-$router->post('/api/empresas/{id}/eliminar','Configuracion\EmpresaController@eliminar');
-$router->post('/api/empresas/{id}/activar','Configuracion\EmpresaController@activar');
+    $router->get('usuarios','Configuracion\UsuarioController@index');
+    $router->post('usuarios','Configuracion\UsuarioController@store');
+    $router->get('usuarios/{id}/edit','Configuracion\UsuarioController@edit');
+    $router->post('usuarios/{id}/eliminar','Configuracion\UsuarioController@eliminar');
+    $router->post('usuarios/{id}/activar','Configuracion\UsuarioController@activar');
+    $router->post('usuarios/exportar','Configuracion\UsuarioController@exportar');
+    $router->post('usuarios/exportarPDF','Configuracion\UsuarioController@exportPDF'); // EJEMPLO DE COMO EXPORTAR PDF
 
-$router->get('/api/usuarios','Configuracion\UsuarioController@index');
-$router->post('/api/usuarios','Configuracion\UsuarioController@store');
-$router->get('/api/usuarios/{id}/edit','Configuracion\UsuarioController@edit');
-$router->post('/api/usuarios/{id}/eliminar','Configuracion\UsuarioController@eliminar');
-$router->post('/api/usuarios/{id}/activar','Configuracion\UsuarioController@activar');
-$router->post('/api/usuarios/exportar','Configuracion\UsuarioController@exportar');
-$router->post('/api/usuarios/exportarPDF','Configuracion\UsuarioController@exportPDF'); // EJEMPLO DE COMO EXPORTAR PDF
-$router->post('/api/usuarios/login','Configuracion\UsuarioController@login');
 
-$router->get('/api/message','Configuracion\UsuarioController@message');
-$router->post('/api/message','Configuracion\UsuarioController@message');
+    $router->get('message','Configuracion\UsuarioController@message');
+    $router->post('message','Configuracion\UsuarioController@message');
 
-$router->get('/api/usuarios/catalogos','Configuracion\UsuarioController@catalogos');
-$router->get('/api/roles/catalogos','Configuracion\RoleController@catalogos');
+    $router->get('usuarios/catalogos','Configuracion\UsuarioController@catalogos');
+    $router->get('roles/catalogos','Configuracion\RoleController@catalogos');
+});
+
+//Rutas no protegidas
+$router->post('api/usuarios/login','Configuracion\UsuarioController@login');

@@ -13,6 +13,7 @@ use App\Models\RolModuloPermiso;
 use App\Models\Usuario;
 use Barryvdh\DomPDF\Facade as PDF;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -23,31 +24,14 @@ class RoleController extends Controller
     public function index(Request $request)
     {
 
-        if(!isset($request->id)){
-            return response()->json([
-                'message' => "a ocurrido un error comunicarse con su administrador"
-            ], 404);
-        }
-
-        $userLoged = Usuario::with([
-            'roles' => function ($query){
-                $query->with('role_module_permisos');
-            }
-        ])->find(Crypt::decrypt($request->id));
-
-        $permisos= Usuario::permisosUsuarioLogeado($userLoged,'/configuracion/roles');
-
-        $isGod = false;
-        if(in_array(1, $userLoged->roleIds())){
-            $isGod = true;
-        }
+        $permisos= Usuario::permisosUsuarioLogeado('/configuracion/roles');
 
         if (isset($request->search))
         {
             // 1 nombre
             switch ($request->item0) {
                 case '1' :
-                    if($isGod){
+                    if(Auth::user()->isGod()){
                         $roles = Role::with('empresa')->where('id','<>', 1)->where('nombre','like','%'.$request->datobuscar.'%')->paginate(10);
                     }else{
                         $roles = Role::with('empresa')->where('id','<>', 1)->where('empresaid',$userLoged->empresaid)->where('nombre','like','%'.$request->datobuscar.'%')->paginate(10);
@@ -56,7 +40,7 @@ class RoleController extends Controller
                     break;
                 case '2' :
 
-                    if($isGod){
+                    if(Auth::user()->isGod()){
                         $roles = Role::with(['empresa' => function($query) use ($request){
                             $query->where('nombre','like','%'.$request->datobuscar.'%');
                         }])->where('empresaid',$userLoged->empresaid)->paginate(10);
@@ -69,7 +53,7 @@ class RoleController extends Controller
             }
 
         }else{
-            if($isGod){
+            if(Auth::user()->isGod()){
                 $roles = Role::with('empresa')->where('id','<>', 1)->paginate(10);
             }else{
                 $roles = Role::with('empresa')->where('empresaid',$userLoged->empresaid)->where('id','<>', 1)->paginate(10);
@@ -159,11 +143,6 @@ class RoleController extends Controller
 
         $userLoged = Usuario::find(Crypt::decrypt($request->id));
 
-        $isGod = false;
-        if(in_array(1, $userLoged->roleIds())){
-            $isGod = true;
-        }
-
         $modulos = Modulo::whereNotNull('to' )->get();
 
         $moduloPermisoInstance = [];
@@ -188,7 +167,7 @@ class RoleController extends Controller
             $moduloPermisoInstance = [];
         }
 
-        if($isGod){
+        if(Auth::user()->isGod()){
             $empresas = Empresa::all();
         }else{
             $empresas = Empresa::where('id',$userLoged->empresaid)->get();

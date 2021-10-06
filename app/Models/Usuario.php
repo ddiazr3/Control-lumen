@@ -2,19 +2,41 @@
 
 namespace App\Models;
 
+use Illuminate\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
+use Laravel\Lumen\Auth\Authorizable;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class Usuario extends Model
+class Usuario extends Model implements AuthenticatableContract, AuthorizableContract, JWTSubject
 {
     /**
         El modelo tiene que ir en singular y migracion en prural
      */
-    use HasFactory;
+    use HasFactory, Authenticatable, Authorizable;
 
     protected $guarded = ["id"];
     protected $table = "usuario";
+
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
+    public function isGod()
+    {
+        $rolesIds = $this->roleIds();
+        return (in_array(1, $rolesIds));
+
+    }
 
     public function roles()
     {
@@ -35,7 +57,14 @@ class Usuario extends Model
     /*
      * Ejemplo si entra al index del controller usuario entonces le devolvera solo los permisos que tiene para hacer en esa pantalla
      * ***/
-    public static function permisosUsuarioLogeado($userLoged,$aTo){
+    public static function permisosUsuarioLogeado($aTo){
+
+        $userLoged = Usuario::with([
+            'roles' => function ($query){
+                $query->with('role_module_permisos');
+            }
+        ])->find(Auth::id());
+
 
         $moduloLogued = Modulo::where('to',$aTo)->first();
         $validateMP= [];

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Empresa;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -14,31 +15,14 @@ class EmpresaController extends Controller
 {
     public function index(Request $request)
     {
-
-        if(!isset($request->id)){
-            return response()->json([
-                'message' => "a ocurrido un error comunicarse con su administrador"
-            ], 404);
-        }
-
-        $userLoged = Usuario::with([
-            'roles' => function ($query){
-                $query->with('role_module_permisos');
-            }
-        ])->find(Crypt::decrypt($request->id));
-
-        $permisos= Usuario::permisosUsuarioLogeado($userLoged,'/configuracion/empresas');
-        $isGod = false;
-        if(in_array(1, $userLoged->roleIds())){
-            $isGod = true;
-        }
+        $permisos= Usuario::permisosUsuarioLogeado('/configuracion/empresas');
 
         if (isset($request->search))
         {
             // 1 nombre
             switch ($request->item0) {
                 case '1' :
-                    if($isGod){
+                    if(Auth::user()->isGod()){
                         $empresas = Empresa::where('nombre','like','%'.$request->datobuscar.'%')->paginate(10);
                     }else{
                         $empresas = Empresa::where('nombre','like','%'.$request->datobuscar.'%')->where('id',$userLoged->empresaid)->paginate(10);
@@ -46,7 +30,7 @@ class EmpresaController extends Controller
                     break;
             }
         }else{
-            if($isGod){
+            if(Auth::user()->isGod()){
                 $empresas = Empresa::paginate(10);
             }else{
                 $empresas = Empresa::where('id',$userLoged->empresaid)->paginate(10);
@@ -63,8 +47,6 @@ class EmpresaController extends Controller
     }
 
     public function store(Request $request){
-
-        Log::info($request);
 
         $rules    = [
             'empresa.nombre'    => 'required',

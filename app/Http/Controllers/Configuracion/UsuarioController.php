@@ -20,31 +20,14 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade as PDF;
+use Illuminate\Support\Facades\Auth;
 
 class UsuarioController extends Controller
 {
+
     public function index(Request $request)
     {
-
-        if(!isset($request->id)){
-            return response()->json([
-                'message' => "a ocurrido un error comunicarse con su administrador"
-            ], 404);
-        }
-
-        $userLoged = Usuario::with([
-            'roles' => function ($query){
-                $query->with('role_module_permisos');
-            }
-        ])->find(Crypt::decrypt($request->id));
-
-        $permisos= Usuario::permisosUsuarioLogeado($userLoged,'/configuracion/usuarios');
-
-        $isGod = false;
-        if(in_array(1, $userLoged->roleIds())){
-            $isGod = true;
-        }
-
+        $permisos= Usuario::permisosUsuarioLogeado('/configuracion/usuarios');
 
         if (isset($request->search))
         {
@@ -52,7 +35,7 @@ class UsuarioController extends Controller
             switch ($request->item0) {
                 case '1' :
 
-                    if($isGod){
+                    if(Auth::user()->isGod()){
                         $usuarios = Usuario::where('nombre','like','%'.$request->datobuscar.'%')->where('id','<>', 1)->paginate(10);
                     }else{
                         $usuarios = Usuario::where('nombre','like','%'.$request->datobuscar.'%')->where('empresaid',$userLoged->empresaid )->where('id','<>', 1)->paginate(10);
@@ -61,7 +44,7 @@ class UsuarioController extends Controller
                         break;
                 case '2' :
 
-                    if($isGod){
+                    if(Auth::user()->isGod()){
                         $usuarios = Usuario::where('apellido','like','%'.$request->datobuscar.'%')->where('id','<>', 1)->paginate(10);
                     }else{
                         $usuarios = Usuario::where('apellido','like','%'.$request->datobuscar.'%')->where('empresaid',$userLoged->empresaid )->where('id','<>', 1)->paginate(10);
@@ -69,7 +52,7 @@ class UsuarioController extends Controller
                         break;
                 case '3' :
 
-                    if($isGod){
+                    if(Auth::user()->isGod()){
                         $usuarios = Usuario::where('telefono','like','%'.$request->datobuscar.'%')->where('id','<>', 1)->paginate(10);
                     }else{
                         $usuarios = Usuario::where('telefono','like','%'.$request->datobuscar.'%')->where('empresaid',$userLoged->empresaid )->where('id','<>', 1)->paginate(10);
@@ -78,7 +61,7 @@ class UsuarioController extends Controller
             }
 
         }else{
-            if($isGod){
+            if(Auth::user()->isGod()){
                 $usuarios = Usuario::where('id','<>', 1)->paginate(10);
             }else{
                 $usuarios = Usuario::where('id','<>', 1)->where('empresaid',$userLoged->empresaid )->paginate(10);
@@ -186,12 +169,7 @@ class UsuarioController extends Controller
 
         $userLoged = Usuario::find(Crypt::decrypt($request->id));
 
-        $isGod = false;
-        if(in_array(1, $userLoged->roleIds())){
-            $isGod = true;
-        }
-
-        if($isGod){
+        if(Auth::user()->isGod()){
             $roles = Role::where('id','<>', 1)->get();
             $empresas = Empresa::all();
         }else{
@@ -312,13 +290,22 @@ class UsuarioController extends Controller
                 'message' => "Contrasenia invalido"
             ],401);
         }
+        $credentials = $request->only(['correo', 'password']);
+
+        if (!$token = Auth::attempt($credentials)) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        Log::info($token);
+
+        $tok = $this->respondWithToken($token);
 
         $usuarioReturn = [
             "nombreCompleto" => $usuario->nombre ." ". $usuario->apellido,
             "correo" => $usuario->correo,
             "telefono" => $usuario->telefono,
             "idUsuarioCrypt" => Crypt::encrypt($usuario->id),
-            "token" => $usuario->token,
+            "token" => $tok,
             "idsRoles" => $usuario->roleIds(),
             "empresa" => [
                 "nombre" => $usuario->usuario ? $usuario->empresa->nombre : null,
@@ -328,13 +315,9 @@ class UsuarioController extends Controller
         ];
 
         $modulosPermisos = [];
-        $validateMP = [];
 
         foreach ($usuario->roles as $u){
             $roleModulePermiso = ModuloPermiso::whereIn('id',$u->modules_permisos_ids())->orderBy('moduloid')->get();
-
-
-
             $idmodulo = 0;
             $idpadre = 0;
             $arrayItems = [];
@@ -344,12 +327,6 @@ class UsuarioController extends Controller
                 if($rmp->moduloid != $idmodulo){
                     $idmodulo = $rmp->moduloid;
                     $modulo = Modulo::find($idmodulo);
-                   // Log::info("modulo ".$modulo);
-                   // Log::info( $u->modules_permisos_ids());
-                    $pInstance = self::permisosModuloI($modulo, $u->modules_permisos_ids());
-                    Log::info($pInstance);
-                    array_push($validateMP, $pInstance);
-
                     if($modulo->padreId){
 
                         $hijos = [];
@@ -360,26 +337,14 @@ class UsuarioController extends Controller
 
                             foreach ($moduloPadre->hijos as $mp){
                                 $modulo = Modulo::find($mp->id);
-                                $roleModulePermisoI = ModuloPermiso::whereIn('id',$u->modules_permisos_ids())
-                                    ->where('moduloid',$mp->id )
-                                    ->orderBy('permisoid')
-                                    ->pluck('permisoid')
-                                    ->toArray();
 
-                                if($roleModulePermisoI){
-                                    $permisos = Permiso::whereIn('id',$roleModulePermisoI)
-                                        ->pluck('nombre')
-                                        ->toArray();
-
-                                    $itemHijo =
-                                        [
-                                            "title"     => $modulo->title,
-                                            "icon"      => $modulo->icon,
-                                            "to"        => $modulo->to,
-                                            "permisos"  => $permisos
-                                        ];
-                                    array_push($hijos,$itemHijo);
-                                }
+                                $itemHijo =
+                                    [
+                                        "title"     => $modulo->title,
+                                        "icon"      => $modulo->icon,
+                                        "to"        => $modulo->to
+                                    ];
+                                array_push($hijos,$itemHijo);
 
                             }
 
@@ -396,21 +361,11 @@ class UsuarioController extends Controller
 
 
                    }else{
-
-                        $roleModulePermisoI = ModuloPermiso::whereIn('id',$u->modules_permisos_ids())
-                            ->where('moduloid',$rmp->id )
-                            ->orderBy('permisoid')
-                            ->pluck('permisoid')
-                            ->toArray();
-                        $permisos = Permiso::whereIn('id',$roleModulePermisoI)
-                            ->pluck('nombre')
-                            ->toArray();
                         $item =
                             [
                                 "title"     => $modulo->title,
                                 "icon"      => $modulo->icon,
-                                "to"        => $modulo->to,
-                                "permisos"  => $permisos
+                                "to"        => $modulo->to
                             ];
 
                         array_push($modulosPermisos,$item);
@@ -422,34 +377,30 @@ class UsuarioController extends Controller
 
         $data = [
             "usuario" => $usuarioReturn,
-            "modulos" => $modulosPermisos,
-            "validarMP" => $validateMP
+            "modulos" => $modulosPermisos
         ];
 
         return response()->json($data);
 
     }
 
-    public static function permisosModuloI(Modulo $modulo, $u)
+    protected function respondWithToken($token)
     {
-        $roleModulePermisoI = ModuloPermiso::whereIn('id',$u)
-            ->where('moduloid',$modulo->id )
-            ->orderBy('permisoid')
-            ->pluck('permisoid')
-            ->toArray();
-        $permisos = Permiso::whereIn('id',$roleModulePermisoI)
-            ->pluck('nombre')
-            ->toArray();
-
-        $item =
-            [
-                "to"        => $modulo->to,
-                "permisos"  => $permisos
-            ];
-
-
-
-        return $item;
-
+        return response()->json([
+            'token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => Auth::factory()->getTTL() * 60
+        ], 200);
     }
+
+    public function logout(){
+        \auth()->logout();
+        return response()->json(['message' => 'Successfully logged out']);
+    }
+
+    public function refresh()
+    {
+        return $this->respondWithToken(auth()->refresh());
+    }
+
 }
