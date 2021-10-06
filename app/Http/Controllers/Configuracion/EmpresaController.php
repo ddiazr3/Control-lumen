@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Configuracion;
 
 use App\Http\Controllers\Controller;
 use App\Models\Empresa;
+use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
@@ -13,21 +14,49 @@ class EmpresaController extends Controller
 {
     public function index(Request $request)
     {
+
+        if(!isset($request->id)){
+            return response()->json([
+                'message' => "a ocurrido un error comunicarse con su administrador"
+            ], 404);
+        }
+
+        $userLoged = Usuario::with([
+            'roles' => function ($query){
+                $query->with('role_module_permisos');
+            }
+        ])->find(Crypt::decrypt($request->id));
+
+        $permisos= Usuario::permisosUsuarioLogeado($userLoged,'/configuracion/empresas');
+        $isGod = false;
+        if(in_array(1, $userLoged->roleIds())){
+            $isGod = true;
+        }
+
         if (isset($request->search))
         {
             // 1 nombre
-
             switch ($request->item0) {
-                case '1' : $empresas = Empresa::where('nombre','like','%'.$request->datobuscar.'%')->paginate(10);
+                case '1' :
+                    if($isGod){
+                        $empresas = Empresa::where('nombre','like','%'.$request->datobuscar.'%')->paginate(10);
+                    }else{
+                        $empresas = Empresa::where('nombre','like','%'.$request->datobuscar.'%')->where('id',$userLoged->empresaid)->paginate(10);
+                    }
                     break;
             }
-
         }else{
-            $empresas = Empresa::paginate(10);
+            if($isGod){
+                $empresas = Empresa::paginate(10);
+            }else{
+                $empresas = Empresa::where('id',$userLoged->empresaid)->paginate(10);
+            }
+
         }
 
         foreach ($empresas as $e){
             $e->idcrypt = Crypt::encrypt($e->id);
+            $e->permisos = $permisos;
         }
 
         return response()->json($empresas);
@@ -69,6 +98,7 @@ class EmpresaController extends Controller
         $empr->direccion = $request->empresa['direccion'];
         $empr->nit = $request->empresa['nit'];
         $empr->telefono = $request->empresa['telefono'];
+        $empr->usuariocreacionid =  isset($request->empresa['usuariocreacionid']) ? Crypt::decrypt($request->empresa['usuariocreacionid']) : null;
         $empr->logo = isset($request->empresa['logo']) ? $request->empresa['logo'] : null;
         $empr->save();
 

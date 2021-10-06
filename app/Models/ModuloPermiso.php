@@ -8,10 +8,12 @@ class ModuloPermiso extends Model
 {
     protected $table = 'modules_permisos';
 
-    /*public function modulos()
+    public function modulos()
     {
         return $this->belongsTo(Modulo::class);
     }
+
+    /*
 
     public function permisos()
     {

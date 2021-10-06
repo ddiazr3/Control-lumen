@@ -25,26 +25,71 @@ class UsuarioController extends Controller
 {
     public function index(Request $request)
     {
+
+        if(!isset($request->id)){
+            return response()->json([
+                'message' => "a ocurrido un error comunicarse con su administrador"
+            ], 404);
+        }
+
+        $userLoged = Usuario::with([
+            'roles' => function ($query){
+                $query->with('role_module_permisos');
+            }
+        ])->find(Crypt::decrypt($request->id));
+
+        $permisos= Usuario::permisosUsuarioLogeado($userLoged,'/configuracion/usuarios');
+
+        $isGod = false;
+        if(in_array(1, $userLoged->roleIds())){
+            $isGod = true;
+        }
+
+
         if (isset($request->search))
         {
             // 1 nombre, 2 telefono, 3 Dpi
-
             switch ($request->item0) {
-                case '1' : $usuarios = Usuario::where('nombre','like','%'.$request->datobuscar.'%')->where('id','<>', 1)->paginate(10);  Log::info('Entrooooo 1');
+                case '1' :
+
+                    if($isGod){
+                        $usuarios = Usuario::where('nombre','like','%'.$request->datobuscar.'%')->where('id','<>', 1)->paginate(10);
+                    }else{
+                        $usuarios = Usuario::where('nombre','like','%'.$request->datobuscar.'%')->where('empresaid',$userLoged->empresaid )->where('id','<>', 1)->paginate(10);
+                    }
+
                         break;
-                case '2' : $usuarios = Usuario::where('apellido','like', '%'.$request->datobuscar.'%')->where('id','<>', 1)->paginate(10);  Log::info('Entrooooo 2');
+                case '2' :
+
+                    if($isGod){
+                        $usuarios = Usuario::where('apellido','like','%'.$request->datobuscar.'%')->where('id','<>', 1)->paginate(10);
+                    }else{
+                        $usuarios = Usuario::where('apellido','like','%'.$request->datobuscar.'%')->where('empresaid',$userLoged->empresaid )->where('id','<>', 1)->paginate(10);
+                    }
                         break;
-                case '3' : $usuarios = Usuario::where('telefono', 'like','%'.$request->datobuscar.'%')->where('id','<>', 1)->paginate(10);  Log::info('Entrooooo 3');
-                        break;
+                case '3' :
+
+                    if($isGod){
+                        $usuarios = Usuario::where('telefono','like','%'.$request->datobuscar.'%')->where('id','<>', 1)->paginate(10);
+                    }else{
+                        $usuarios = Usuario::where('telefono','like','%'.$request->datobuscar.'%')->where('empresaid',$userLoged->empresaid )->where('id','<>', 1)->paginate(10);
+                    }
+                     break;
             }
 
         }else{
-            $usuarios = Usuario::where('id','<>', 1)->paginate(10);
+            if($isGod){
+                $usuarios = Usuario::where('id','<>', 1)->paginate(10);
+            }else{
+                $usuarios = Usuario::where('id','<>', 1)->where('empresaid',$userLoged->empresaid )->paginate(10);
+            }
+
         }
 
         foreach ($usuarios as $u){
             $u->idcrypt = Crypt::encrypt($u->id);
             $u->rolesid = $u->roleIds();
+            $u->permisos = $permisos;
         }
 
         return response()->json($usuarios);
@@ -100,6 +145,7 @@ class UsuarioController extends Controller
         $usuario->telefono = $request->usuario['telefono'];
         $usuario->direccion = $request->usuario['direccion'];
         $usuario->empresaid = $request->usuario['empresaid'];
+        $usuario->usuariocreacionid =  isset($request->usuario['usuariocreacionid']) ? Crypt::decrypt($request->usuario['usuariocreacionid']) : null;
         $usuario->save();
 
         if(isset($request->usuario['idcrypt']) and $request->usuario['idcrypt']){
@@ -129,10 +175,31 @@ class UsuarioController extends Controller
         return response()->json($usuarios);
     }
 
-    public function catalogos()
+    public function catalogos(Request $request)
     {
-        $roles = Role::where('id','<>', 1)->get();
-        $empresas = Empresa::all();
+
+        if(!isset($request->id)){
+            return response()->json([
+                'message' => "a ocurrido un error comunicarse con su administrador"
+            ], 404);
+        }
+
+        $userLoged = Usuario::find(Crypt::decrypt($request->id));
+
+        $isGod = false;
+        if(in_array(1, $userLoged->roleIds())){
+            $isGod = true;
+        }
+
+        if($isGod){
+            $roles = Role::where('id','<>', 1)->get();
+            $empresas = Empresa::all();
+        }else{
+            Log::info("usuariempresa catalogo $userLoged->empresaid ");
+            $roles = Role::where('id','<>', 1)->where('empresaid',$userLoged->empresaid)->get();
+            $empresas = Empresa::where('id',$userLoged->empresaid)->get();
+        }
+
 
         $data = [
             "roles" => $roles,
