@@ -21,10 +21,20 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class RoleController extends Controller
 {
+    private $path = '/configuracion/roles';
     public function index(Request $request)
     {
 
-        $permisos= Usuario::permisosUsuarioLogeado('/configuracion/roles');
+        $permisos= Usuario::permisosUsuarioLogeado($this->path);
+
+        if(!in_array('index',$permisos[0])){
+            $data = [
+                "roles" => [],
+                "permisos" => []
+            ];
+            return response()->json($data);
+        }
+
 
         if (isset($request->search))
         {
@@ -73,7 +83,13 @@ class RoleController extends Controller
 
     public function store(Request $request){
 
-        Log::info($request);
+        $permisos= Usuario::permisosUsuarioLogeado($this->path);
+
+        if(!in_array('create',$permisos[0])){
+            return response()->json([
+                'message' => "Unauthorized"
+            ],405);
+        }
 
         $rules    = [
             'role.nombre'    => 'required',
@@ -125,6 +141,13 @@ class RoleController extends Controller
 
     public function edit($id)
     {
+        $permisos= Usuario::permisosUsuarioLogeado($this->path);
+
+        if(!in_array('edit',$permisos[0])){
+            return response()->json([
+                'message' => "Unauthorized"
+            ],405);
+        }
         $id = Crypt::decrypt($id);
         $role = Role::find($id);
         $role->idcrypt = Crypt::encrypt($id);
@@ -178,7 +201,13 @@ class RoleController extends Controller
 
     public function eliminar($id)
     {
+        $permisos= Usuario::permisosUsuarioLogeado($this->path);
 
+        if(!in_array('destroy',$permisos[0])){
+            return response()->json([
+                'message' => "Unauthorized"
+            ],405);
+        }
         $role = Role::find($id);
         $role->delete();
         return response()->json("ok");

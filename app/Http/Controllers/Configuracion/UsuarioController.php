@@ -25,11 +25,19 @@ use Illuminate\Support\Facades\Auth;
 class UsuarioController extends Controller
 {
 
+    private $path = '/configuracion/usuarios';
+
     public function index(Request $request)
     {
-        $permisos= Usuario::permisosUsuarioLogeado('/configuracion/usuarios');
+        $permisos= Usuario::permisosUsuarioLogeado($this->path);
 
-
+        if(!in_array('index',$permisos[0])){
+            $data = [
+                "usuarios" => [],
+                "permisos" => []
+            ];
+            return response()->json($data);
+        }
 
         if (isset($request->search))
         {
@@ -70,7 +78,7 @@ class UsuarioController extends Controller
             }
 
         }
-        Log::info($usuarios);
+
         foreach ($usuarios as $u){
             $u->idcrypt = Crypt::encrypt($u->id);
             $u->rolesid = $u->roleIds();
@@ -85,6 +93,14 @@ class UsuarioController extends Controller
     }
 
     public function store(Request $request){
+
+        $permisos= Usuario::permisosUsuarioLogeado($this->path);
+
+        if(!in_array('create',$permisos[0])){
+            return response()->json([
+                'message' => "Unauthorized"
+            ],405);
+        }
 
         $rules    = [
             'usuario.nombre'    => 'required',
@@ -157,6 +173,13 @@ class UsuarioController extends Controller
 
     public function edit($id)
     {
+        $permisos= Usuario::permisosUsuarioLogeado($this->path);
+
+        if(!in_array('edit',$permisos[0])){
+            return response()->json([
+                'message' => "Unauthorized"
+            ],405);
+        }
         $id = Crypt::decrypt($id);
         $usuarios = Usuario::find($id);
         $usuarios->idcrypt = Crypt::encrypt($id);
@@ -187,6 +210,14 @@ class UsuarioController extends Controller
     public function eliminar($id)
     {
 
+        $permisos= Usuario::permisosUsuarioLogeado($this->path);
+
+        if(!in_array('desactive',$permisos[0])){
+            return response()->json([
+                'message' => "Unauthorized"
+            ],405);
+        }
+
         $usuarios = Usuario::find($id);
         $usuarios->activo = false;
         $usuarios->update();
@@ -195,6 +226,13 @@ class UsuarioController extends Controller
 
     public function activar($id)
     {
+        $permisos= Usuario::permisosUsuarioLogeado($this->path);
+
+        if(!in_array('active',$permisos[0])){
+            return response()->json([
+                'message' => "Unauthorized"
+            ],405);
+        }
         $usuarios = Usuario::find($id);
         $usuarios->activo = true;
         $usuarios->update();
@@ -293,8 +331,6 @@ class UsuarioController extends Controller
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
-        Log::info($token);
-
         $tok = $this->respondWithToken($token);
 
         $usuarioReturn = [
@@ -328,8 +364,27 @@ class UsuarioController extends Controller
                 if($rmp->moduloid != $idmodulo){
                     $idmodulo = $rmp->moduloid;
                     $modulo = Modulo::find($idmodulo);
-                   // Log::info("modulo ".$modulo);
-                   // Log::info( $u->modules_permisos_ids());
+
+
+                    $roleModulePermisoI = ModuloPermiso::whereIn('id',$u->modules_permisos_ids())
+                        ->where('moduloid',$modulo->id )
+                        ->orderBy('permisoid')
+                        ->pluck('permisoid')
+                        ->toArray();
+                    $permisos = Permiso::whereIn('id',$roleModulePermisoI)
+                        ->pluck('nombre')
+                        ->toArray();
+
+                    // eaqui tomo el nombre del modulo para validar a lado de la vista que rutas tiene acceso
+                    $item = [$modulo->nombre ];
+                    array_push($validateMP, $item);
+                    foreach ($permisos as $p) {
+                        //en las rutas de vue tiene por ejemeplo usuarios-create y en permisos hay uno que se llama create
+                        // entonces solo se lo concateno para que en la vista haga match si tiene permisos o no a esa ruta
+                        $name = "$modulo->nombre-$p";
+                        $item = [$name];
+                        array_push($validateMP, $item);
+                    }
 
                     if($modulo->padreId){
 
@@ -390,16 +445,15 @@ class UsuarioController extends Controller
 
         $data = [
             "usuario" => $usuarioReturn,
-            "modulos" => $modulosPermisos
+            "modulos" => $modulosPermisos,
+            "validarMP" => $validateMP
         ];
-
-        Log::info($data);
 
         return response()->json($data);
 
     }
 
-    protected function respondWithToken($token)
+     protected function respondWithToken($token)
     {
         return response()->json([
             'token' => $token,

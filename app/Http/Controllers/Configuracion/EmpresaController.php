@@ -13,10 +13,18 @@ use Illuminate\Support\Facades\Validator;
 
 class EmpresaController extends Controller
 {
+    private $path = '/configuracion/empresas';
     public function index(Request $request)
     {
-        $permisos= Usuario::permisosUsuarioLogeado('/configuracion/empresas');
+        $permisos= Usuario::permisosUsuarioLogeado($this->path);
 
+        if(!in_array('index',$permisos[0])){
+            $data = [
+                "empresas" => [],
+                "permisos" => []
+            ];
+            return response()->json($data);
+        }
         if (isset($request->search))
         {
             // 1 nombre
@@ -50,6 +58,14 @@ class EmpresaController extends Controller
     }
 
     public function store(Request $request){
+
+        $permisos= Usuario::permisosUsuarioLogeado($this->path);
+
+        if(!in_array('create',$permisos[0])){
+            return response()->json([
+                'message' => "Unauthorized"
+            ],405);
+        }
 
         $rules    = [
             'empresa.nombre'    => 'required',
@@ -92,6 +108,13 @@ class EmpresaController extends Controller
 
     public function edit($id)
     {
+        $permisos= Usuario::permisosUsuarioLogeado($this->path);
+
+        if(!in_array('edit',$permisos[0])){
+            return response()->json([
+                'message' => "Unauthorized"
+            ],405);
+        }
         $id = Crypt::decrypt($id);
         $empresa = Empresa::find($id);
         $empresa->idcrypt = Crypt::encrypt($id);
@@ -100,7 +123,13 @@ class EmpresaController extends Controller
 
     public function eliminar($id)
     {
+        $permisos= Usuario::permisosUsuarioLogeado($this->path);
 
+        if(!in_array('desactive',$permisos[0])){
+            return response()->json([
+                'message' => "Unauthorized"
+            ],405);
+        }
         $empresa = Empresa::find($id);
         $empresa->activo = false;
         $empresa->update();
@@ -109,6 +138,13 @@ class EmpresaController extends Controller
 
     public function activar($id)
     {
+        $permisos= Usuario::permisosUsuarioLogeado($this->path);
+
+        if(!in_array('active',$permisos[0])){
+            return response()->json([
+                'message' => "Unauthorized"
+            ],405);
+        }
         $empresa = Empresa::find($id);
         $empresa->activo = true;
         $empresa->update();

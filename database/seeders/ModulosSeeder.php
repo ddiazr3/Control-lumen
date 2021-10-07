@@ -19,7 +19,7 @@ class ModulosSeeder extends Seeder
     {
         DB::table('modulos')->truncate();
 
-        $this->add(1, 'inicio','Principal','mdi-view-dashboard',300,'/principal');
+        $this->add(1, 'principal','Principal','mdi-view-dashboard',300,'/principal');
 
         $this->add(2, 'configuracion','Configuración','mdi-cog-outline',400);
         $i = 2; //contamos el numero de elementos atras
