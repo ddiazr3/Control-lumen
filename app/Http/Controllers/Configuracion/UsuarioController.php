@@ -29,6 +29,8 @@ class UsuarioController extends Controller
     {
         $permisos= Usuario::permisosUsuarioLogeado('/configuracion/usuarios');
 
+
+
         if (isset($request->search))
         {
             // 1 nombre, 2 telefono, 3 Dpi
@@ -68,14 +70,18 @@ class UsuarioController extends Controller
             }
 
         }
-
+        Log::info($usuarios);
         foreach ($usuarios as $u){
             $u->idcrypt = Crypt::encrypt($u->id);
             $u->rolesid = $u->roleIds();
-            $u->permisos = $permisos;
         }
 
-        return response()->json($usuarios);
+        $data = [
+            "usuarios" => $usuarios,
+            "permisos" => $permisos
+        ];
+
+        return response()->json($data);
     }
 
     public function store(Request $request){

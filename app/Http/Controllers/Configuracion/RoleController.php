@@ -63,10 +63,12 @@ class RoleController extends Controller
 
         foreach ($roles as $r){
             $r->idcrypt = Crypt::encrypt($r->id);
-            $r->permisos = $permisos;
         }
-
-        return response()->json($roles);
+        $data = [
+            "roles" => $roles,
+            "permisos" => $permisos
+        ];
+        return response()->json($data);
     }
 
     public function store(Request $request){

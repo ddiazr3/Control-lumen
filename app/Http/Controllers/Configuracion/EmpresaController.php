@@ -40,10 +40,13 @@ class EmpresaController extends Controller
 
         foreach ($empresas as $e){
             $e->idcrypt = Crypt::encrypt($e->id);
-            $e->permisos = $permisos;
         }
 
-        return response()->json($empresas);
+        $data = [
+            "empresas" => $empresas,
+            "permisos" => $permisos
+        ];
+        return response()->json($data);
     }
 
     public function store(Request $request){
