@@ -25,7 +25,7 @@ class EmpresaController extends Controller
                     if(Auth::user()->isGod()){
                         $empresas = Empresa::where('nombre','like','%'.$request->datobuscar.'%')->paginate(10);
                     }else{
-                        $empresas = Empresa::where('nombre','like','%'.$request->datobuscar.'%')->where('id',$userLoged->empresaid)->paginate(10);
+                        $empresas = Empresa::where('nombre','like','%'.$request->datobuscar.'%')->where('id',Auth::user()->empresaid)->paginate(10);
                     }
                     break;
             }
@@ -33,7 +33,7 @@ class EmpresaController extends Controller
             if(Auth::user()->isGod()){
                 $empresas = Empresa::paginate(10);
             }else{
-                $empresas = Empresa::where('id',$userLoged->empresaid)->paginate(10);
+                $empresas = Empresa::where('id',Auth::user()->empresaid)->paginate(10);
             }
 
         }

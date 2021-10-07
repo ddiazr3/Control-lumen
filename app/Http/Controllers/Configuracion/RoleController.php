@@ -34,7 +34,7 @@ class RoleController extends Controller
                     if(Auth::user()->isGod()){
                         $roles = Role::with('empresa')->where('id','<>', 1)->where('nombre','like','%'.$request->datobuscar.'%')->paginate(10);
                     }else{
-                        $roles = Role::with('empresa')->where('id','<>', 1)->where('empresaid',$userLoged->empresaid)->where('nombre','like','%'.$request->datobuscar.'%')->paginate(10);
+                        $roles = Role::with('empresa')->where('id','<>', 1)->where('empresaid',Auth::user()->empresaid)->where('nombre','like','%'.$request->datobuscar.'%')->paginate(10);
                     }
 
                     break;
@@ -43,11 +43,11 @@ class RoleController extends Controller
                     if(Auth::user()->isGod()){
                         $roles = Role::with(['empresa' => function($query) use ($request){
                             $query->where('nombre','like','%'.$request->datobuscar.'%');
-                        }])->where('empresaid',$userLoged->empresaid)->paginate(10);
+                        }])->where('empresaid',Auth::user()->empresaid)->paginate(10);
                     }else{
                         $roles = Role::with(['empresa' => function($query) use ($request){
                             $query->where('nombre','like','%'.$request->datobuscar.'%');
-                        }])->where('empresaid',$userLoged->empresaid)->paginate(10);
+                        }])->where('empresaid',Auth::user()->empresaid)->paginate(10);
                     }
                     break;
             }
@@ -56,7 +56,7 @@ class RoleController extends Controller
             if(Auth::user()->isGod()){
                 $roles = Role::with('empresa')->where('id','<>', 1)->paginate(10);
             }else{
-                $roles = Role::with('empresa')->where('empresaid',$userLoged->empresaid)->where('id','<>', 1)->paginate(10);
+                $roles = Role::with('empresa')->where('empresaid',Auth::user()->empresaid)->where('id','<>', 1)->paginate(10);
             }
 
         }
@@ -137,14 +137,6 @@ class RoleController extends Controller
         //este query cabal me sirve para le menu
        // $modulosPermisos = Modulo::with('permisos')->whereNotNull('to' )->get();
 
-        if(!isset($request->id)){
-            return response()->json([
-                'message' => "a ocurrido un error comunicarse con su administrador"
-            ], 404);
-        }
-
-        $userLoged = Usuario::find(Crypt::decrypt($request->id));
-
         $modulos = Modulo::whereNotNull('to' )->get();
 
         $moduloPermisoInstance = [];
@@ -172,7 +164,7 @@ class RoleController extends Controller
         if(Auth::user()->isGod()){
             $empresas = Empresa::all();
         }else{
-            $empresas = Empresa::where('id',$userLoged->empresaid)->get();
+            $empresas = Empresa::where('id',Auth::user()->empresaid)->get();
         }
 
 

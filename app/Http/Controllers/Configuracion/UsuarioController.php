@@ -40,7 +40,7 @@ class UsuarioController extends Controller
                     if(Auth::user()->isGod()){
                         $usuarios = Usuario::where('nombre','like','%'.$request->datobuscar.'%')->where('id','<>', 1)->paginate(10);
                     }else{
-                        $usuarios = Usuario::where('nombre','like','%'.$request->datobuscar.'%')->where('empresaid',$userLoged->empresaid )->where('id','<>', 1)->paginate(10);
+                        $usuarios = Usuario::where('nombre','like','%'.$request->datobuscar.'%')->where('empresaid',Auth::user()->empresaid )->where('id','<>', 1)->paginate(10);
                     }
 
                         break;
@@ -49,7 +49,7 @@ class UsuarioController extends Controller
                     if(Auth::user()->isGod()){
                         $usuarios = Usuario::where('apellido','like','%'.$request->datobuscar.'%')->where('id','<>', 1)->paginate(10);
                     }else{
-                        $usuarios = Usuario::where('apellido','like','%'.$request->datobuscar.'%')->where('empresaid',$userLoged->empresaid )->where('id','<>', 1)->paginate(10);
+                        $usuarios = Usuario::where('apellido','like','%'.$request->datobuscar.'%')->where('empresaid',Auth::user()->empresaid )->where('id','<>', 1)->paginate(10);
                     }
                         break;
                 case '3' :
@@ -57,7 +57,7 @@ class UsuarioController extends Controller
                     if(Auth::user()->isGod()){
                         $usuarios = Usuario::where('telefono','like','%'.$request->datobuscar.'%')->where('id','<>', 1)->paginate(10);
                     }else{
-                        $usuarios = Usuario::where('telefono','like','%'.$request->datobuscar.'%')->where('empresaid',$userLoged->empresaid )->where('id','<>', 1)->paginate(10);
+                        $usuarios = Usuario::where('telefono','like','%'.$request->datobuscar.'%')->where('empresaid',Auth::user()->empresaid )->where('id','<>', 1)->paginate(10);
                     }
                      break;
             }
@@ -66,7 +66,7 @@ class UsuarioController extends Controller
             if(Auth::user()->isGod()){
                 $usuarios = Usuario::where('id','<>', 1)->paginate(10);
             }else{
-                $usuarios = Usuario::where('id','<>', 1)->where('empresaid',$userLoged->empresaid )->paginate(10);
+                $usuarios = Usuario::where('id','<>', 1)->where('empresaid',Auth::user()->empresaid )->paginate(10);
             }
 
         }
@@ -167,21 +167,12 @@ class UsuarioController extends Controller
     public function catalogos(Request $request)
     {
 
-        if(!isset($request->id)){
-            return response()->json([
-                'message' => "a ocurrido un error comunicarse con su administrador"
-            ], 404);
-        }
-
-        $userLoged = Usuario::find(Crypt::decrypt($request->id));
-
-        if(Auth::user()->isGod()){
+       if(Auth::user()->isGod()){
             $roles = Role::where('id','<>', 1)->get();
             $empresas = Empresa::all();
         }else{
-            Log::info("usuariempresa catalogo $userLoged->empresaid ");
-            $roles = Role::where('id','<>', 1)->where('empresaid',$userLoged->empresaid)->get();
-            $empresas = Empresa::where('id',$userLoged->empresaid)->get();
+            $roles = Role::where('id','<>', 1)->where('empresaid',Auth::user()->empresaid)->get();
+            $empresas = Empresa::where('id',Auth::user()->empresaid)->get();
         }
 
 
@@ -321,9 +312,13 @@ class UsuarioController extends Controller
         ];
 
         $modulosPermisos = [];
+        $validateMP = [];
 
         foreach ($usuario->roles as $u){
             $roleModulePermiso = ModuloPermiso::whereIn('id',$u->modules_permisos_ids())->orderBy('moduloid')->get();
+
+
+
             $idmodulo = 0;
             $idpadre = 0;
             $arrayItems = [];
@@ -333,6 +328,9 @@ class UsuarioController extends Controller
                 if($rmp->moduloid != $idmodulo){
                     $idmodulo = $rmp->moduloid;
                     $modulo = Modulo::find($idmodulo);
+                   // Log::info("modulo ".$modulo);
+                   // Log::info( $u->modules_permisos_ids());
+
                     if($modulo->padreId){
 
                         $hijos = [];
@@ -343,14 +341,22 @@ class UsuarioController extends Controller
 
                             foreach ($moduloPadre->hijos as $mp){
                                 $modulo = Modulo::find($mp->id);
+                                $roleModulePermisoI = ModuloPermiso::whereIn('id',$u->modules_permisos_ids())
+                                    ->where('moduloid',$mp->id )
+                                    ->orderBy('permisoid')
+                                    ->pluck('permisoid')
+                                    ->toArray();
 
-                                $itemHijo =
-                                    [
-                                        "title"     => $modulo->title,
-                                        "icon"      => $modulo->icon,
-                                        "to"        => $modulo->to
-                                    ];
-                                array_push($hijos,$itemHijo);
+                                if($roleModulePermisoI){
+
+                                    $itemHijo =
+                                        [
+                                            "title"     => $modulo->title,
+                                            "icon"      => $modulo->icon,
+                                            "to"        => $modulo->to
+                                        ];
+                                    array_push($hijos,$itemHijo);
+                                }
 
                             }
 
@@ -367,11 +373,12 @@ class UsuarioController extends Controller
 
 
                    }else{
+
                         $item =
                             [
                                 "title"     => $modulo->title,
                                 "icon"      => $modulo->icon,
-                                "to"        => $modulo->to
+                                "to"        => $modulo->to,
                             ];
 
                         array_push($modulosPermisos,$item);
@@ -385,6 +392,8 @@ class UsuarioController extends Controller
             "usuario" => $usuarioReturn,
             "modulos" => $modulosPermisos
         ];
+
+        Log::info($data);
 
         return response()->json($data);
 
