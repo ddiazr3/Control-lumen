@@ -1,12 +1,18 @@
-FROM php:7.1-fpm
-
+FROM bitnami/php-fpm:latest
 ENV TZ="/usr/share/zoneinfo/America/Guatemala"
 
-RUN apt-get update && apt-get install -y libmcrypt-dev mariadb-client zlib1g-dev libxml2-dev \
-    && docker-php-ext-install mcrypt pdo_mysql zip soap simplexml pcntl \
-    && docker-php-ext-configure pcntl --enable-pcntl
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+RUN php -r "if (hash_file('sha384', 'composer-setup.php') === '906a84df04cea2aa72f40b5f787e49f22d4c2f19492ac310e8cba5b96ac8b64115ac402c8cd292b8a03482574915d1a8') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+RUN php composer-setup.php
+RUN php -r "unlink('composer-setup.php');"
 
-ADD ./dockerfiles/php/limits.conf /usr/local/etc/php-fpm.d/limits.conf
+#COPY dockerfiles/horizon/horizon.sh /opt/bin/entrypoint.sh
+#RUN chmod +x /opt/bin/entrypoint.sh
+#CMD ["/opt/bin/entrypoint.sh"]
+
+RUN apt-get update && apt-get install -y vim
+ADD ./dockerfiles/php/limits.conf /opt/bitnami/php/etc/conf.d/limits.conf
+ADD ./dockerfiles/php/limits.ini /opt/bitnami/php/etc/conf.d/limits.ini
 
 WORKDIR /var/www
 

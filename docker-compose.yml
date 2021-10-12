@@ -1,4 +1,4 @@
-version: '2.1'
+version: '2'
 services:
   redis:
     build:
@@ -8,18 +8,18 @@ services:
   nginx:
     build:
       context: ./
-      dockerfile: dockerfiles/nginx.docker
+      dockerfile: ./dockerfiles/nginx.docker
     volumes:
       - './:/var/www'
     restart: always
     ports:
-      - '5051:80'
+      - 5051:80
     links:
       - php
   php:
     build:
       context: ./
-      dockerfile: dockerfiles/php/php.docker
+      dockerfile: ./dockerfiles/php/php.docker
     volumes:
       - './:/var/www'
       - './storage/tmp:/tmp'
@@ -35,7 +35,7 @@ services:
   scheduler:
     build:
       context: ./
-      dockerfile: dockerfiles/scheduler/scheduler.docker
+      dockerfile: ./dockerfiles/scheduler/scheduler.docker
     volumes:
       - './:/var/www'
       - './storage/tmp:/tmp'
@@ -48,31 +48,17 @@ services:
       - DB_HOST=mysql
       - REDIS_PORT=6379
       - REDIS_HOST=redis
-  horizon:
-    build:
-      context: ./
-      dockerfile: dockerfiles/horizon/horizon.docker
-    volumes:
-      - './:/var/www'
-      - './storage/tmp:/tmp'
-    restart: always
-    links:
-      - redis
-    environment:
-      - TZ=America/Guatemala
-      - REDIS_PORT=6379
-      - REDIS_HOST=redis
   mysql:
     build:
       context: ./
-      dockerfile: dockerfiles/mysql.docker
+      dockerfile: ./dockerfiles/mysql.docker
     volumes:
       - 'mysql-data:/var/lib/mysql'
     restart: always
     environment:
       - MYSQL_ROOT_PASSWORD=Secreto2021
-      - MYSQL_DATABASE=asiste
+      - MYSQL_DATABASE=control
     ports:
-      - '33050:3306'
+      - 33055:3306
 volumes:
   mysql-data: null

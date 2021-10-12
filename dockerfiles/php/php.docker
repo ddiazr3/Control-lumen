@@ -1,5 +1,15 @@
-FROM php:7.4-fpm
+FROM bitnami/php-fpm:latest
 ENV TZ="/usr/share/zoneinfo/America/Guatemala"
+
+#COPY ./dockerfiles/composer.sh /opt/bin/composer.sh
+#RUN chmod +x /opt/bin/composer.sh
+#CMD ["/opt/bin/composer.sh"]
+
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+RUN php -r "if (hash_file('sha384', 'composer-setup.php') === '906a84df04cea2aa72f40b5f787e49f22d4c2f19492ac310e8cba5b96ac8b64115ac402c8cd292b8a03482574915d1a8') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+RUN php composer-setup.php
+RUN php -r "unlink('composer-setup.php');"
+
 RUN echo 'alias migrate="php artisan migrate"' >> ~/.bashrc
 RUN echo 'alias rollback="php artisan migrate:rollback"' >> ~/.bashrc
 RUN echo 'alias seed="php artisan db:seed"' >> ~/.bashrc
@@ -7,20 +17,14 @@ RUN echo 'alias seedgod="php artisan db:seed --class=InicialSeeder"' >> ~/.bashr
 RUN echo 'alias seedgod="php artisan db:seed --class=GodSeeder"' >> ~/.bashrc
 RUN echo 'alias cda="composer dump-autoload"' >> ~/.bashrc
 
-RUN apt-get update && apt-get install -y libmcrypt-dev mariadb-client zlib1g-dev libxml2-dev
-#RUN docker-php-ext-install zip
-# Instalar manual mente cada una docker-php-ext-install pdo_mysql zip soap simplexml pcntl
-#RUN docker-php-ext-configure pcntl --enable-pcntl  mcrypt pdo_mysql zip soap simplexml pcntl
+RUN apt-get update && apt-get install -y vim
+# libmcrypt-dev mariadb-client zlib1g-dev libxml2-dev \
+# && docker-php-ext-install mcrypt pdo_mysql zip soap simplexml pcntl \
+# && docker-php-ext-configure pcntl --enable-pcntl
 
- # && docker-php-ext-configure pcntl --enable-pcntl
-
-ADD ./dockerfiles/php/limits.conf /usr/local/etc/php-fpm.d/limits.conf
-ADD ./dockerfiles/php/limits.ini /usr/local/etc/php/conf.d/limits.ini
-
-# and install dependencies
-# RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
-# RUN apt-get install -y nodejs
+ADD ./dockerfiles/php/limits.conf /opt/bitnami/php/etc/conf.d/limits.conf
+ADD ./dockerfiles/php/limits.ini /opt/bitnami/php/etc/conf.d/limits.ini
 
 WORKDIR /var/www
 
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+

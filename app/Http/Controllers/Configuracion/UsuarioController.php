@@ -381,7 +381,7 @@ class UsuarioController extends Controller
                     foreach ($permisos as $p) {
                         //en las rutas de vue tiene por ejemeplo usuarios-create y en permisos hay uno que se llama create
                         // entonces solo se lo concateno para que en la vista haga match si tiene permisos o no a esa ruta
-                        $name = "$modulo->nombre-$p";
+                        $name = "$modulo->nombre".$p;
                         $item = [$name];
                         array_push($validateMP, $item);
                     }
