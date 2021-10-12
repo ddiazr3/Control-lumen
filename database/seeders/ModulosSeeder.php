@@ -25,7 +25,7 @@ class ModulosSeeder extends Seeder
         $i = 2; //contamos el numero de elementos atras
         $this->add(3, 'empresas','Empresas','mdi-align-vertical-bottom',450,'/configuracion/empresas',$i);
         $this->add(4, 'roles','Roles','mdi-key',500,'/configuracion/roles',$i);
-        $this->add(5, 'Usuarios','Usuarios','mdi-account',300,'/configuracion/usuarios',$i);
+        $this->add(5, 'usuarios','Usuarios','mdi-account',300,'/configuracion/usuarios',$i);
         DB::table('modulos')->insert($this->inserts);
         DB::statement('UPDATE modulos SET created_at=NOW(), updated_at=NOW()');
     }

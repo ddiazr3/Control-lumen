@@ -32,7 +32,7 @@ $router->group(['middleware' => 'auth','prefix' => 'api'], function () use ($rou
     $router->post('empresas/{id}/eliminar','Configuracion\EmpresaController@eliminar');
     $router->post('empresas/{id}/activar','Configuracion\EmpresaController@activar');
 
-    //$router->get('usuarios','Configuracion\UsuarioController@index');
+    $router->get('usuarios','Configuracion\UsuarioController@index');
     $router->post('usuarios','Configuracion\UsuarioController@store');
     $router->get('usuarios/{id}/edit','Configuracion\UsuarioController@edit');
     $router->post('usuarios/{id}/eliminar','Configuracion\UsuarioController@eliminar');
@@ -50,4 +50,4 @@ $router->group(['middleware' => 'auth','prefix' => 'api'], function () use ($rou
 
 //Rutas no protegidas
 $router->post('api/usuarios/login','Configuracion\UsuarioController@login');
-$router->get('api/usuarios','Configuracion\UsuarioController@index');
+
