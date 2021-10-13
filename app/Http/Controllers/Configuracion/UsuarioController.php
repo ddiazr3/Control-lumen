@@ -312,7 +312,7 @@ class UsuarioController extends Controller
             'roles' => function ($query){
                 $query->with('role_module_permisos');
             }
-        ])->where('correo', $correo)->first();
+        ])->where('correo', $correo)->where('activo', true)->first();
 
         if(!$usuario){
             return response()->json([
@@ -325,6 +325,18 @@ class UsuarioController extends Controller
                 'message' => "Contrasenia invalido"
             ],401);
         }
+
+        $isPrimeraVes = false;
+
+
+        if(!$usuario->primeraves){
+            $isPrimeraVes = true;
+            $usuario->conectado = true;
+        }
+
+        $usuario->conectado = true;
+        $usuario->update();
+
         $credentials = $request->only(['correo', 'password']);
 
         if (!$token = Auth::attempt($credentials)) {
@@ -446,7 +458,8 @@ class UsuarioController extends Controller
         $data = [
             "usuario" => $usuarioReturn,
             "modulos" => $modulosPermisos,
-            "validarMP" => $validateMP
+            "validarMP" => $validateMP,
+            "isPrimeraVes" => $isPrimeraVes
         ];
 
         return response()->json($data);
@@ -470,6 +483,26 @@ class UsuarioController extends Controller
     public function refresh()
     {
         return $this->respondWithToken(auth()->refresh());
+    }
+
+    public function passwordchange(Request $request){
+        $correo = $request->correo;
+
+        $usuario = Usuario::where('correo', $correo)->where('activo', true)->first();
+
+        if(!$usuario){
+            return response()->json([
+                'message' => "Correo invalido"
+            ],405);
+        }
+
+        /**
+         *Enviar correo electronico al usuario que requiere el cambio
+         */
+
+        return response()->json([
+            'message' => "Revisa tu correco electronico"
+        ], 200);
     }
 
 }

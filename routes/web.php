@@ -48,6 +48,6 @@ $router->group(['middleware' => 'auth','prefix' => 'api'], function () use ($rou
     $router->get('roles/catalogos','Configuracion\RoleController@catalogos');
 });
 
-//Rutas no protegidas
+//Rutas no protegidas passwordchange
 $router->post('api/usuarios/login','Configuracion\UsuarioController@login');
-
+$router->post('api/usuarios/passwordchange','Configuracion\UsuarioController@passwordchange');
