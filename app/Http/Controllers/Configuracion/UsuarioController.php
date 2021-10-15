@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Configuracion;
 use App\Exports\SolicitudEntregaExport;
 use App\Exports\UsuarioExport;
 use App\Http\Controllers\Controller;
+use App\Mail\Correo;
 use App\Models\Empresa;
 use App\Models\Modulo;
 use App\Models\ModuloPermiso;
@@ -17,7 +18,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade as PDF;
 use Illuminate\Support\Facades\Auth;
@@ -327,9 +330,11 @@ class UsuarioController extends Controller
         }
 
         $isPrimeraVes = false;
-
+        $tokenR = null;
 
         if(!$usuario->primeraves){
+            $tokenR = Str::random(32);
+            $usuario->token = $tokenR;
             $isPrimeraVes = true;
             $usuario->conectado = true;
         }
@@ -459,7 +464,8 @@ class UsuarioController extends Controller
             "usuario" => $usuarioReturn,
             "modulos" => $modulosPermisos,
             "validarMP" => $validateMP,
-            "isPrimeraVes" => $isPrimeraVes
+            "isPrimeraVes" => $isPrimeraVes,
+            "tokenR" => $tokenR
         ];
 
         return response()->json($data);
@@ -485,9 +491,9 @@ class UsuarioController extends Controller
         return $this->respondWithToken(auth()->refresh());
     }
 
-    public function passwordchange(Request $request){
-        $correo = $request->correo;
+    public function confirmacioncorreo(Request $request){
 
+        $correo = $request->correo;
         $usuario = Usuario::where('correo', $correo)->where('activo', true)->first();
 
         if(!$usuario){
@@ -496,12 +502,40 @@ class UsuarioController extends Controller
             ],405);
         }
 
+        $token = Str::random(32);
+
+        $usuario->token = $token;
+        $usuario->update();
+
         /**
-         *Enviar correo electronico al usuario que requiere el cambio
+         *Enviar correo electronico al usuario que requiere el cambio con la url del token
          */
+
+        $urlENV = env('URL_VUE');
+        $url = "$urlENV/contrasenia/$token";
+
+        Mail::to(['danylen1@hotmail.com'])->send(new Correo('Ingresa al siguiente link para cambiar tu contraseña',$url));
 
         return response()->json([
             'message' => "Revisa tu correco electronico"
+        ], 200);
+    }
+
+    public function passwordchange(Request $request,$token){
+
+        $usuario = Usuario::where('token',$token)->first();
+
+        if(!$usuario){
+            return response()->json([
+                'message' => "Token no valido"
+            ],405);
+        }
+        $usuario->password = Hash::make($request->password);
+        $usuario->token = null;
+        $usuario->update();
+
+        return response()->json([
+            'message' => "Su contraseña fue cambiada con exito"
         ], 200);
     }
 
