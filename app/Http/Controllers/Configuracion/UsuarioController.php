@@ -514,7 +514,7 @@ class UsuarioController extends Controller
         $urlENV = env('URL_VUE');
         $url = "$urlENV/contrasenia/$token";
 
-        Mail::to(['danylen1@hotmail.com'])->send(new Correo('Ingresa al siguiente link para cambiar tu contraseña',$url));
+        Mail::to([$correo])->send(new Correo('Ingresa al siguiente link para cambiar tu contraseña',$url));
 
         return response()->json([
             'message' => "Revisa tu correco electronico"
