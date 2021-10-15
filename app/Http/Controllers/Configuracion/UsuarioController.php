@@ -310,33 +310,37 @@ class UsuarioController extends Controller
         $correo = $request->correo;
         $pass = $request->password;
 
-
+        Log::info($request);
         $usuario = Usuario::with([
             'roles' => function ($query){
                 $query->with('role_module_permisos');
             }
         ])->where('correo', $correo)->where('activo', true)->first();
 
+
+
         if(!$usuario){
             return response()->json([
                 'message' => "Correo invalido"
-            ],401);
+            ],405);
         }
 
         if(!Hash::check($pass, $usuario->password)) {
             return response()->json([
                 'message' => "Contrasenia invalido"
-            ],401);
+            ],405);
         }
 
         $isPrimeraVes = false;
         $tokenR = null;
 
+        Log::info("es primera vez $usuario->primeraves ");
+
         if(!$usuario->primeraves){
             $tokenR = Str::random(32);
             $usuario->token = $tokenR;
             $isPrimeraVes = true;
-            $usuario->conectado = true;
+            $usuario->primeraves = true;
         }
 
         $usuario->conectado = true;
@@ -482,7 +486,13 @@ class UsuarioController extends Controller
     }
 
     public function logout(){
-        \auth()->logout();
+
+        $usuario = Usuario::find(Auth::id());
+        $usuario->token = null;
+        $usuario->conectado = false;
+        $usuario->update();
+
+        Auth::logout();
         return response()->json(['message' => 'Successfully logged out']);
     }
 
@@ -534,9 +544,13 @@ class UsuarioController extends Controller
         $usuario->token = null;
         $usuario->update();
 
+        $isFirst = false;
+
         return response()->json([
+            'isFirst' => $isFirst,
             'message' => "Su contraseña fue cambiada con exito"
         ], 200);
     }
+
 
 }

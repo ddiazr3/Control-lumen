@@ -50,5 +50,6 @@ $router->group(['middleware' => 'auth','prefix' => 'api'], function () use ($rou
 
 //Rutas no protegidas passwordchange
 $router->post('api/usuarios/login','Configuracion\UsuarioController@login');
+$router->post('api/usuarios/logout','Configuracion\UsuarioController@logout');
 $router->post('api/usuarios/confirmacioncorreo','Configuracion\UsuarioController@confirmacioncorreo');
 $router->post('api/usuarios/passwordchange/{token}','Configuracion\UsuarioController@passwordchange');
