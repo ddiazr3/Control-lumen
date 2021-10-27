@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddUsuarioCreacionToUsuarioTable extends Migration
+class AlterEmpresaidToUsuarioTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,23 +14,11 @@ class AddUsuarioCreacionToUsuarioTable extends Migration
     public function up()
     {
         Schema::table('usuario', function (Blueprint $table) {
-            $table->foreignId('usuariocreacionid')
+            $table->foreignId('puntoventaid')
                 ->nullable()
-                ->constrained('usuario')
+                ->constrained('punto_ventas')
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
-        });
-
-        Schema::table('roles', function (Blueprint $table) {
-            $table->foreignId('usuariocreacionid')
-                ->nullable()
-                ->constrained('usuario')
-                ->onUpdate('cascade')
-                ->onDelete('cascade');
-        });
-
-        Schema::table('empresa', function (Blueprint $table) {
-            $table->integer('usuariocreacionid');
         });
     }
 

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddUsuarioCreacionToUsuarioTable extends Migration
+class CreateComprasTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,24 +13,25 @@ class AddUsuarioCreacionToUsuarioTable extends Migration
      */
     public function up()
     {
-        Schema::table('usuario', function (Blueprint $table) {
-            $table->foreignId('usuariocreacionid')
+        Schema::create('compras', function (Blueprint $table) {
+            $table->id();
+            $table->dateTime("fechacompra");
+            $table->decimal("totalpagado",8,2);
+            $table->foreignId('usuarioid')
                 ->nullable()
                 ->constrained('usuario')
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
-        });
-
-        Schema::table('roles', function (Blueprint $table) {
-            $table->foreignId('usuariocreacionid')
+            $table->foreignId('empresaid')
                 ->nullable()
-                ->constrained('usuario')
+                ->constrained('empresa')
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
-        });
-
-        Schema::table('empresa', function (Blueprint $table) {
-            $table->integer('usuariocreacionid');
+            $table->foreignId('estadocompraid')
+                ->constrained('estado_compras')
+                ->onUpdate('cascade')
+                ->onDelete('cascade');
+            $table->timestamps();
         });
     }
 
@@ -41,8 +42,6 @@ class AddUsuarioCreacionToUsuarioTable extends Migration
      */
     public function down()
     {
-        Schema::table('usuario', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('compras');
     }
 }

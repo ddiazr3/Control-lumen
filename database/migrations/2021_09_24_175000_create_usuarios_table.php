@@ -17,7 +17,7 @@ class CreateUsuariosTable extends Migration
             $table->id();
             $table->string('nombre');
             $table->string('direccion');
-            $table->string('nit', 20);
+            $table->string('nit', 20)->nullable();
             $table->string('telefono', 15);
             $table->timestamps();
         });
@@ -32,11 +32,6 @@ class CreateUsuariosTable extends Migration
             $table->string('direccion');
             $table->string('password');
             $table->string('token')->nullable();
-            $table->foreignId('empresaid')
-                ->nullable()
-                ->constrained('empresa')
-                ->onUpdate('cascade')
-                ->onDelete('cascade');
             $table->timestamps();
         });
     }

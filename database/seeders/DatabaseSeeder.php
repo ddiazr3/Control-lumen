@@ -19,6 +19,9 @@ class DatabaseSeeder extends Seeder
          $this->call(PermisosSeeder::class);
          $this->call(ModulosSeeder::class);
          $this->call(ModuloPermisosSeeder::class);
+        $this->call(EmpresaSeeder::class);
+        $this->call(EstadoCompraSeeder::class);
+        $this->call(EstadoVentaSeeder::class);
         Model::reguard();
         Schema::enableForeignKeyConstraints();
     }
