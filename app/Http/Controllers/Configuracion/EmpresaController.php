@@ -99,7 +99,7 @@ class EmpresaController extends Controller
         $empr->direccion = $request->empresa['direccion'];
         $empr->nit = $request->empresa['nit'];
         $empr->telefono = $request->empresa['telefono'];
-        $empr->usuariocreacionid =  isset($request->empresa['usuariocreacionid']) ? Crypt::decrypt($request->empresa['usuariocreacionid']) : null;
+        $empr->usuariocreacionid = Auth::user()->empresaid;
         $empr->logo = isset($request->empresa['logo']) ? $request->empresa['logo'] : null;
         $empr->save();
 

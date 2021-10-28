@@ -16,22 +16,26 @@ class CreateProductosTable extends Migration
         Schema::create('productos', function (Blueprint $table) {
             $table->id();
             $table->string("nombre");
-            $table->string("descripcion");
+            $table->string("descripcion")->nullable();
             $table->boolean("activo")->default(true);
-            $table->string("codigo");
+            $table->string("codigo")->nullable();
             $table->foreignId('proveedorid')
+                ->nullable()
                 ->constrained('proveedores')
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
             $table->foreignId('marcaid')
+                ->nullable()
                 ->constrained('marcas')
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
             $table->foreignId('lineaid')
+                ->nullable()
                 ->constrained('lineas')
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
             $table->foreignId('categoriaid')
+                ->nullable()
                 ->constrained('categorias')
                 ->onUpdate('cascade')
                 ->onDelete('cascade');

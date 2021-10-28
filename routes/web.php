@@ -57,6 +57,7 @@ $router->group(['middleware' => 'auth','prefix' => 'api'], function () use ($rou
     $router->post('lineas','Catalogos\LineaController@store');
     $router->get('lineas/{id}/edit','Catalogos\LineaController@edit');
     $router->post('lineas/{id}/eliminar','Catalogos\LineaController@eliminar');
+    $router->get('lineas/catalogos','Catalogos\LineaController@catalogos');
 
     $router->get('categorias','Catalogos\CategoriaController@index');
     $router->post('categorias','Catalogos\CategoriaController@store');
@@ -72,7 +73,8 @@ $router->group(['middleware' => 'auth','prefix' => 'api'], function () use ($rou
     $router->post('productos','Catalogos\ProductoController@store');
     $router->get('productos/{id}/edit','Catalogos\ProductoController@edit');
     $router->post('productos/{id}/eliminar','Catalogos\ProductoController@eliminar');
-
+    $router->post('productos/{id}/activar','Catalogos\ProductoController@activar');
+    $router->get('productos/catalogos','Catalogos\ProductoController@catalogos');
 
 });
 
