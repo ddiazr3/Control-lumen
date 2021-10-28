@@ -46,6 +46,34 @@ $router->group(['middleware' => 'auth','prefix' => 'api'], function () use ($rou
 
     $router->get('usuarios/catalogos','Configuracion\UsuarioController@catalogos');
     $router->get('roles/catalogos','Configuracion\RoleController@catalogos');
+
+    //CATALOGOS
+    $router->get('marcas','Catalogos\MarcaController@index');
+    $router->post('marcas','Catalogos\MarcaController@store');
+    $router->get('marcas/{id}/edit','Catalogos\MarcaController@edit');
+    $router->post('marcas/{id}/eliminar','Catalogos\MarcaController@eliminar');
+
+    $router->get('lineas','Catalogos\LineaController@index');
+    $router->post('lineas','Catalogos\LineaController@store');
+    $router->get('lineas/{id}/edit','Catalogos\LineaController@edit');
+    $router->post('lineas/{id}/eliminar','Catalogos\LineaController@eliminar');
+
+    $router->get('categorias','Catalogos\CategoriaController@index');
+    $router->post('categorias','Catalogos\CategoriaController@store');
+    $router->get('categorias/{id}/edit','Catalogos\CategoriaController@edit');
+    $router->post('categorias/{id}/eliminar','Catalogos\CategoriaController@eliminar');
+
+    $router->get('proveedores','Catalogos\ProveedorController@index');
+    $router->post('proveedores','Catalogos\ProveedorController@store');
+    $router->get('proveedores/{id}/edit','Catalogos\ProveedorController@edit');
+    $router->post('proveedores/{id}/eliminar','Catalogos\ProveedorController@eliminar');
+
+    $router->get('productos','Catalogos\ProductoController@index');
+    $router->post('productos','Catalogos\ProductoController@store');
+    $router->get('productos/{id}/edit','Catalogos\ProductoController@edit');
+    $router->post('productos/{id}/eliminar','Catalogos\ProductoController@eliminar');
+
+
 });
 
 //Rutas no protegidas passwordchange
