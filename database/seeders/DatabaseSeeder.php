@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
          $this->call(ModulosSeeder::class);
          $this->call(ModuloPermisosSeeder::class);
         $this->call(EmpresaSeeder::class);
+        $this->call(PuntoVentaSeeder::class);
         $this->call(EstadoCompraSeeder::class);
         $this->call(EstadoVentaSeeder::class);
         Model::reguard();

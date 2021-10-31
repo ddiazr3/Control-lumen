@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Configuracion;
 use App\Http\Controllers\Controller;
 use App\Models\Empresa;
 use App\Models\Usuario;
+use App\Models\PuntoVentas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
@@ -59,6 +60,10 @@ class EmpresaController extends Controller
 
     public function store(Request $request){
 
+
+        Log::info($request);
+
+
         $permisos= Usuario::permisosUsuarioLogeado($this->path);
 
         if(!in_array('create',$permisos[0])){
@@ -103,6 +108,29 @@ class EmpresaController extends Controller
         $empr->logo = isset($request->empresa['logo']) ? $request->empresa['logo'] : null;
         $empr->save();
 
+
+        foreach ($request->empresa['punto_ventas'] as $pv){
+            if(!$pv['igualprincipal']){
+                $puntoVentaInstance = PuntoVentas::find($pv['id']);
+                $puntoVentaInstance->nombre = $pv['nombre'];
+                $puntoVentaInstance->direccion = $pv['direccion'];
+                $puntoVentaInstance->nit = $pv['nit'];
+                $puntoVentaInstance->telefono = $pv['telefono'];
+                $puntoVentaInstance->empresaid = $pv['empresaid'];
+                $puntoVentaInstance->update();
+            }else{
+                $puntoVentaInstance = PuntoVentas::find($pv['id']);
+                $puntoVentaInstance->nombre = $request->empresa['nombre'];
+                $puntoVentaInstance->direccion = $request->empresa['direccion'];
+                $puntoVentaInstance->nit = $request->empresa['nit'];
+                $puntoVentaInstance->telefono = $request->empresa['telefono'];
+                $puntoVentaInstance->empresaid = Auth::user()->empresaid;
+                $puntoVentaInstance->update();
+            }
+        }
+
+
+
         return response()->json(200);
     }
 
@@ -116,8 +144,9 @@ class EmpresaController extends Controller
             ],405);
         }
         $id = Crypt::decrypt($id);
-        $empresa = Empresa::find($id);
+        $empresa = Empresa::with('puntoventas')->find($id);
         $empresa->idcrypt = Crypt::encrypt($id);
+
         return response()->json($empresa);
     }
 
@@ -125,7 +154,9 @@ class EmpresaController extends Controller
     {
         $permisos= Usuario::permisosUsuarioLogeado($this->path);
 
-        if(!in_array('desactive',$permisos[0])){
+
+
+        if(!in_array('destroy',$permisos[0])){
             return response()->json([
                 'message' => "Unauthorized"
             ],405);
@@ -140,7 +171,7 @@ class EmpresaController extends Controller
     {
         $permisos= Usuario::permisosUsuarioLogeado($this->path);
 
-        if(!in_array('active',$permisos[0])){
+        if(!in_array('update',$permisos[0])){
             return response()->json([
                 'message' => "Unauthorized"
             ],405);
