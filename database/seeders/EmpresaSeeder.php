@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use App\Models\Empresa;
 
 class EmpresaSeeder extends Seeder
 {
@@ -11,24 +12,31 @@ class EmpresaSeeder extends Seeder
 
     public function run()
     {
-        DB::table('empresa')->truncate();
+      //  DB::table('empresa')->truncate();
 
-        $this->add(1, 'Empresa Pruebas','Guatemala',null, "58403313", true, false, 0);
+        //se insert las empresas
+        $this->add(1, 'Empresa Pruebas','Guatemala'," ", "58403313", true, false, 0);
+        $this->add(2, 'Empresa Pruebas Dos','Guatemala'," ", "58443311", true, true, 3);
+
         DB::table('empresa')->insert($this->inserts);
         DB::statement('UPDATE empresa SET created_at=NOW(), updated_at=NOW()');
     }
 
     private function add($mId, $mNombre,$mDireccion, $mNit, $mTelefono, $mActivo,$mTieneSucursal , $mCantidadSucursal){
-        $this->inserts[] = [
-            'id' => $mId,
-            'nombre' => $mNombre,
-            'direccion' => $mDireccion,
-            'nit' => $mNit,
-            'telefono' => $mTelefono,
-            'activo' => $mActivo,
-            'tienesucursal' => $mTieneSucursal,
-            'cantidadsucursal' => $mCantidadSucursal,
-            'usuariocreacionid' => 1
-        ];
+        $empresa = Empresa::find($mId);
+
+        if(!$empresa){
+            $this->inserts[] = [
+                'id' => $mId,
+                'nombre' => $mNombre,
+                'direccion' => $mDireccion,
+                'nit' => $mNit,
+                'telefono' => $mTelefono,
+                'activo' => $mActivo,
+                'tienesucursal' => $mTieneSucursal,
+                'cantidadsucursal' => $mCantidadSucursal,
+                'usuariocreacionid' => 1
+            ];
+        }
     }
 }
