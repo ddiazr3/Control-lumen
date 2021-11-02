@@ -11,6 +11,7 @@ use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class LineaController extends Controller
@@ -34,18 +35,18 @@ class LineaController extends Controller
             switch ($request->item0) {
                 case '1' :
                     if(Auth::user()->isGod()){
-                        $lineas = Linea::where('nombre','like','%'.$request->datobuscar.'%')->paginate(10);
+                        $lineas = Linea::with('marca')->where('nombre','like','%'.$request->datobuscar.'%')->paginate(10);
                     }else{
-                        $lineas = Linea::where('nombre','like','%'.$request->datobuscar.'%')->where('empresaid',Auth::user()->empresaid)->paginate(10);
+                        $lineas = Linea::with('marca')->where('nombre','like','%'.$request->datobuscar.'%')->where('empresaid',Auth::user()->empresaid)->paginate(10);
 
                     }
                     break;
             }
         }else{
             if(Auth::user()->isGod()){
-                $lineas = Linea::paginate(10);
+                $lineas = Linea::with('marca')->paginate(10);
             }else{
-                $lineas = Linea::where('empresaid',Auth::user()->empresaid)->paginate(10);
+                $lineas = Linea::with('marca')->where('empresaid',Auth::user()->empresaid)->paginate(10);
             }
 
         }
@@ -58,6 +59,8 @@ class LineaController extends Controller
             "lineas" => $lineas,
             "permisos" => $permisos
         ];
+
+        Log::info($data);
         return response()->json($data);
     }
 
@@ -72,13 +75,13 @@ class LineaController extends Controller
         }
 
         $rules    = [
-            'lineas.nombre'    => 'required',
-            'lineas.marcaid'    => 'required',
+            'linea.nombre'    => 'required',
+            'linea.marcaid'    => 'required',
         ];
 
         $messages = [
-            'lineas.nombre.required'        => 'El nombre es requerido',
-            'lineas.marcaid.required'        => 'Marca es requerido',
+            'linea.nombre.required'        => 'El nombre es requerido',
+            'linea.marcaid.required'        => 'Marca es requerido',
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages = $messages);
@@ -88,13 +91,13 @@ class LineaController extends Controller
                 'message' => $validator->errors()
             ], 404);
         }
-        if(isset($request->lineas['idcrypt']) and $request->lineas['idcrypt']){
-            $li = Linea::find(Crypt::decrypt($request->lineas['idcrypt']));
+        if(isset($request->linea['idcrypt']) and $request->linea['idcrypt']){
+            $li = Linea::find(Crypt::decrypt($request->linea['idcrypt']));
         }else{
             $li = new Linea();
         }
-        $li->nombre = $request->lineas['nombre'];
-        $li->marcaid = $request->lineas['marcaid'];
+        $li->nombre = $request->linea['nombre'];
+        $li->marcaid = $request->linea['marcaid'];
         $li->empresaid =  Auth::user()->empresaid ?? 1;
         $li->save();
 
@@ -131,7 +134,7 @@ class LineaController extends Controller
     }
 
     public function catalogos(){
-        $marcas = Marca::where('empresaid', Auth::user()->empresaid)->first();
+        $marcas = Marca::where('empresaid', Auth::user()->empresaid)->get();
 
         $data = [
             "marcas" => $marcas

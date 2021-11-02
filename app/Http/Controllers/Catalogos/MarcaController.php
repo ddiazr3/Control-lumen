@@ -58,6 +58,11 @@ class MarcaController extends Controller
             "marcas" => $marcas,
             "permisos" => $permisos
         ];
+
+
+
+
+
         return response()->json($data);
     }
 
@@ -72,11 +77,11 @@ class MarcaController extends Controller
         }
 
         $rules    = [
-            'marcas.nombre'    => 'required',
+            'marca.nombre'    => 'required',
         ];
 
         $messages = [
-            'marcas.nombre.required'        => 'El nombre es requerido',
+            'marca.nombre.required'        => 'El nombre es requerido',
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages = $messages);
@@ -86,12 +91,12 @@ class MarcaController extends Controller
                 'message' => $validator->errors()
             ], 404);
         }
-        if(isset($request->marcas['idcrypt']) and $request->marcas['idcrypt']){
-            $ma = Marca::find(Crypt::decrypt($request->marcas['idcrypt']));
+        if(isset($request->marca['idcrypt']) and $request->marca['idcrypt']){
+            $ma = Marca::find(Crypt::decrypt($request->marca['idcrypt']));
         }else{
             $ma = new Marca();
         }
-        $ma->nombre = $request->marcas['nombre'];
+        $ma->nombre = $request->marca['nombre'];
         $ma->empresaid =  Auth::user()->empresaid ?? 1;
         $ma->save();
 

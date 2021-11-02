@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Configuracion;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Empresa;
+use App\Models\Producto;
 use App\Models\Usuario;
 use App\Models\PuntoVentas;
 use Illuminate\Support\Facades\Auth;
@@ -122,6 +123,10 @@ class PuntoVentaController extends Controller
         $id = Crypt::decrypt($id);
         $pv = PuntoVentas::find($id);
         $pv->idcrypt = Crypt::encrypt($id);
+
+
+        $productos = Producto::where('empresaid',$pv->empresaid)->get();
+
 
         return response()->json($pv);
     }
