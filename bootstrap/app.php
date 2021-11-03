@@ -98,6 +98,7 @@ $app->configure('app');
 // $app->register(App\Providers\EventServiceProvider::class);
 //$app->register('Nord\Lumen\Cors\CorsServiceProvider');
 $app->register('Nord\Lumen\Cors\CorsServiceProvider');
+//$app->register(League\flysystem\flysystemServiceProvider::class);
 $app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
 
 //Maatwebsite\Excel\ExcelServiceProvider::class
@@ -128,5 +129,6 @@ $app->configure('mail');
 $app->alias('mailer', Illuminate\Mail\Mailer::class);
 $app->alias('mailer', Illuminate\Contracts\Mail\Mailer::class);
 $app->alias('mailer', Illuminate\Contracts\Mail\MailQueue::class);
+$app->singleton('filesystem', function ($app) { return $app->loadComponent('filesystems', 'Illuminate\Filesystem\FilesystemServiceProvider', 'filesystem'); });
 
 return $app;

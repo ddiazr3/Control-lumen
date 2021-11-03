@@ -142,4 +142,11 @@ class LineaController extends Controller
 
         return response()->json($data);
     }
+
+    public function getLinea($marcaid){
+
+        $lineas = Linea::where('empresaid', Auth::user()->empresaid)->where('marcaid',$marcaid)->get();
+
+        return response()->json($lineas);
+    }
 }

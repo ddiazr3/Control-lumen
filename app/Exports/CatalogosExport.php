@@ -2,19 +2,24 @@
 
 namespace App\Exports;
 
-use Maatwebsite\Excel\Concerns\Exportable;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\Exportable;
 
-class UsuarioExport implements FromCollection,WithHeadings
+class CatalogosExport implements FromCollection, WithHeadings
 {
     use Exportable;
 
     protected $data;
+    protected $header;
 
-    public function __construct($data = null)
+    //
+
+    public function __construct($data = null,$header = null)
     {
         $this->data = $data;
+        $this->header = $header;
     }
 
     public function collection()
@@ -23,6 +28,6 @@ class UsuarioExport implements FromCollection,WithHeadings
     }
 
     public function headings(): array{
-        return ["Nombres","Apellidos","Telefono","Dirección","Roles"];
+        return $this->header;
     }
 }

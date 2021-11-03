@@ -3,15 +3,19 @@
 namespace App\Http\Controllers\Catalogos;
 
 use App\Http\Controllers\Controller;
+use App\Models\Bodega;
 use App\Models\Categoria;
 use App\Models\Linea;
 use App\Models\Marca;
+use App\Models\PrecioBodega;
 use App\Models\Producto;
 use App\Models\Proveedor;
+use App\Models\StockBodega;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class ProductoController extends Controller
@@ -35,18 +39,18 @@ class ProductoController extends Controller
             switch ($request->item0) {
                 case '1' :
                     if(Auth::user()->isGod()){
-                        $productos = Producto::where('nombre','like','%'.$request->datobuscar.'%')->paginate(10);
+                        $productos = Producto::with(['proveedor','categoria','marca','linea','precio','stock'])->where('nombre','like','%'.$request->datobuscar.'%')->paginate(10);
                     }else{
-                        $productos = Producto::where('nombre','like','%'.$request->datobuscar.'%')->where('empresaid',Auth::user()->empresaid)->paginate(10);
+                        $productos = Producto::with(['proveedor','categoria','marca','linea','precio','stock'])->where('nombre','like','%'.$request->datobuscar.'%')->where('empresaid',Auth::user()->empresaid)->paginate(10);
 
                     }
                     break;
             }
         }else{
             if(Auth::user()->isGod()){
-                $productos = Producto::paginate(10);
+                $productos = Producto::with(['proveedor','categoria','marca','linea','precio','stock'])->paginate(10);
             }else{
-                $productos = Producto::where('empresaid',Auth::user()->empresaid)->paginate(10);
+                $productos = Producto::with(['proveedor','categoria','marca','linea','precio','stock'])->where('empresaid',Auth::user()->empresaid)->paginate(10);
             }
 
         }
@@ -54,6 +58,10 @@ class ProductoController extends Controller
         foreach ($productos as $e){
             $e->idcrypt = Crypt::encrypt($e->id);
         }
+
+
+        Log::info($productos);
+
 
         $data = [
             "productos" => $productos,
@@ -87,9 +95,33 @@ class ProductoController extends Controller
                 'message' => $validator->errors()
             ], 404);
         }
+
+
+
+
         if(isset($request->producto['idcrypt']) and $request->producto['idcrypt']){
+
+            $pr = Producto::where('id','<>',Crypt::decrypt($request->producto['idcrypt']))->where('codigo',$request->producto['codigo'])->first();
+
+            if($pr){
+                return response()->json([
+                    'message' => "Código ya existe"
+                ], 404);
+            }
+
             $prod = Producto::find(Crypt::decrypt($request->producto['idcrypt']));
+
+
         }else{
+
+
+            $pr = Producto::where('codigo',$request->producto['codigo'])->first();
+
+            if($pr){
+                return response()->json([
+                    'message' => "Código ya existe"
+                ], 404);
+            }
             $prod = new Producto();
         }
         $prod->nombre = $request->producto['nombre'];
@@ -101,6 +133,28 @@ class ProductoController extends Controller
         $prod->categoriaid = $request->producto['categoriaid'] ?? null;
         $prod->empresaid =  Auth::user()->empresaid ?? 1;
         $prod->save();
+
+        $bodega = Bodega::where('empresaid',Auth::user()->empresaid)->first();
+
+        if($request->producto['stockBodega']['id']){
+            $catidadB = StockBodega::find($request->producto['stockBodega']['id']);
+        }else{
+            $catidadB = new StockBodega();
+        }
+        $catidadB->cantidad = $request->producto['stockBodega']['cantidad'];
+        $catidadB->productoid = $prod->id;
+        $catidadB->bodegaid = $bodega->id;
+        $catidadB->save();
+
+        if($request->producto['precioBodega']['id']){
+            $precioB = PrecioBodega::find($request->producto['precioBodega']['id']);
+        }else{
+            $precioB = new precioBodega();
+        }
+        $precioB->precio = $request->producto['precioBodega']['precio'];
+        $precioB->productoid = $prod->id;
+        $precioB->bodegaid = $bodega->id;
+        $precioB->save();
 
         return response()->json(200);
     }
@@ -115,7 +169,7 @@ class ProductoController extends Controller
             ],405);
         }
         $id = Crypt::decrypt($id);
-        $prod = Producto::find($id);
+        $prod = Producto::with(['proveedor','categoria','marca','linea','precio','stock'])->find($id);
         $prod->idcrypt = Crypt::encrypt($id);
         return response()->json($prod);
     }
@@ -151,18 +205,15 @@ class ProductoController extends Controller
     }
 
     public function catalogos(){
-        $marcas = Marca::where('empresaid', Auth::user()->empresaid)->first();
-        $lineas = Linea::where('empresaid', Auth::user()->empresaid)->first();
-        $proveedores = Proveedor::where('empresaid', Auth::user()->empresaid)->first();
-        $categorias = Categoria::where('empresaid', Auth::user()->empresaid)->first();
+        $marcas = Marca::where('empresaid', Auth::user()->empresaid)->get();
+        $proveedores = Proveedor::where('empresaid', Auth::user()->empresaid)->get();
+        $categorias = Categoria::where('empresaid', Auth::user()->empresaid)->get();
 
         $data = [
             "marcas" => $marcas,
-            "lineas" => $lineas,
             "proveedores" => $proveedores,
             "categoria" => $categorias
         ];
-
         return response()->json($data);
     }
 }

@@ -58,12 +58,14 @@ $router->group(['middleware' => 'auth','prefix' => 'api'], function () use ($rou
     $router->post('marcas','Catalogos\MarcaController@store');
     $router->get('marcas/{id}/edit','Catalogos\MarcaController@edit');
     $router->post('marcas/{id}/eliminar','Catalogos\MarcaController@eliminar');
+    $router->post('marcas/exportar','Catalogos\MarcaController@exportar');
 
     $router->get('lineas','Catalogos\LineaController@index');
     $router->post('lineas','Catalogos\LineaController@store');
     $router->get('lineas/{id}/edit','Catalogos\LineaController@edit');
     $router->post('lineas/{id}/eliminar','Catalogos\LineaController@eliminar');
     $router->get('lineas/catalogos','Catalogos\LineaController@catalogos');
+    $router->get('lineas/getLinea/{marcaid}','Catalogos\LineaController@getLinea');
 
     $router->get('categorias','Catalogos\CategoriaController@index');
     $router->post('categorias','Catalogos\CategoriaController@store');

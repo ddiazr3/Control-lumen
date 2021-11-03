@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Configuracion;
 
 use App\Http\Controllers\Controller;
+use App\Models\Bodega;
 use App\Models\Empresa;
 use App\Models\Usuario;
 use App\Models\PuntoVentas;
@@ -61,7 +62,6 @@ class EmpresaController extends Controller
     public function store(Request $request){
 
 
-        Log::info($request);
 
 
         $permisos= Usuario::permisosUsuarioLogeado($this->path);
@@ -108,6 +108,17 @@ class EmpresaController extends Controller
         $empr->logo = isset($request->empresa['logo']) ? $request->empresa['logo'] : null;
         $empr->save();
 
+        if($request->empresa['bodega']['id']){
+            $bodega = Bodega::find($request->empresa['bodega']['id']);
+        }else{
+            $bodega = new Bodega();
+        }
+        $bodega->nombre = !$request->empresa['bodega']['igualempresa'] ? $request->empresa['bodega']['nombre'] : $request->empresa['nombre'];
+        $bodega->direccion = !$request->empresa['bodega']['igualempresa'] ?  $request->empresa['bodega']['direccion'] : $request->empresa['direccion'];
+        $bodega->telefono = !$request->empresa['bodega']['igualempresa'] ? $request->empresa['bodega']['telefono'] : $request->empresa['telefono'];
+        $bodega->igualempresa = $request->empresa['bodega']['igualempresa'];
+        $bodega->empresaid = $empr->id;
+        $bodega->save();
 
         foreach ($request->empresa['punto_ventas'] as $pv){
             if(!$pv['igualprincipal']){
@@ -144,8 +155,11 @@ class EmpresaController extends Controller
             ],405);
         }
         $id = Crypt::decrypt($id);
-        $empresa = Empresa::with('puntoventas')->find($id);
+        $empresa = Empresa::with(['puntoventas','bodega'])->find($id);
         $empresa->idcrypt = Crypt::encrypt($id);
+
+        Log::info($empresa);
+
 
         return response()->json($empresa);
     }

@@ -11,4 +11,8 @@ class Empresa extends Model
     public function puntoventas() {
         return $this->hasMany(PuntoVentas::class, 'empresaid', 'id');
     }
+
+    public function bodega() {
+        return $this->hasOne(Bodega::class, 'empresaid', 'id');
+    }
 }

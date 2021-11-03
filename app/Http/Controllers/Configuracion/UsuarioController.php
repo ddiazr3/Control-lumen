@@ -244,7 +244,7 @@ class UsuarioController extends Controller
 
     public function exportar(Request $request){
 
-        $usuarios = Usuario::with(['roles']);
+        $usuarios = Usuario::with(['roles'])->where('empresaid',Auth::user()->empresaid);
 
         if (isset($request->search))
         {

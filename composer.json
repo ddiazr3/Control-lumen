@@ -9,6 +9,7 @@
         "barryvdh/laravel-dompdf": "^0.9.0",
         "illuminate/mail": "^8.64",
         "laravel/lumen-framework": "^8.0",
+        "league/flysystem": " ~1.0",
         "maatwebsite/excel": "^3.1",
         "nordsoftware/lumen-cors": "^3.4",
         "tymon/jwt-auth": "^1.0"
