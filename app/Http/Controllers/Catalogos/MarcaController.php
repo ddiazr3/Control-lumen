@@ -162,22 +162,27 @@ class MarcaController extends Controller
         $header = ["nombre"];
 
         $filename = 'marcas.xlsx';
+
         Excel::store(new CatalogosExport(collect($dataExport), $header),$filename);
 
         $file = Storage::get($filename);
-        if ($file) {
+
+
+
+       /* if ($file) {
            $fileLink = 'data:application/vnd.ms-excel;base64,' . base64_encode($file);
            @chmod(Storage::disk('local')->path($filename), 0755);
            @unlink(Storage::disk('local')->path($filename));
-        }
+        }*/
 
-        $fullPath = Storage::disk('local')->path($filename);
+        $fullPath = Storage::disk('public')->path($filename);
+        $storageURL = Storage::url($filename);
 
+        Log::info($storageURL);
+        Log::info($fullPath);
+        return $fullPath;
 
-        Log::info($fileLink);
-
-
-        return Excel::download(new CatalogosExport(collect($dataExport), $header),'marcas.xlsx'); //$fileLink; //(new CatalogosExport(collect($dataExport), $header))->download('marcas.xlsx');
+       // return Excel::download(new CatalogosExport(collect($dataExport), $header),'marcas.xlsx'); //$fileLink; //(new CatalogosExport(collect($dataExport), $header))->download('marcas.xlsx');
 
          //      return Excel::download(new CatalogosExport(collect($dataExport), $header),'marcas.xlsx');
     }
