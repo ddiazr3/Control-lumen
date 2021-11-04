@@ -1,5 +1,8 @@
 # Lumen PHP Framework
 
+PARA LA CRACION DEL STORAGE LINK
+https://stackoverflow.com/questions/47772360/how-to-create-symlink-for-storage-public-folder-for-lumen
+
 [![Build Status](https://travis-ci.org/laravel/lumen-framework.svg)](https://travis-ci.org/laravel/lumen-framework)
 [![Total Downloads](https://img.shields.io/packagist/dt/laravel/framework)](https://packagist.org/packages/laravel/lumen-framework)
 [![Latest Stable Version](https://img.shields.io/packagist/v/laravel/framework)](https://packagist.org/packages/laravel/lumen-framework)

@@ -37,7 +37,6 @@ class InicialSeeder extends Seeder
                 'updated_at' => date_create()
             ]
         );
-
         DB::table('roles_usuarios')->insert([
             'usuarioid' => 1,
             'roleid'     => 1

@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\PuntoVentas;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use App\models\PuntoVentas;
 
 class PuntoVentaSeeder extends Seeder
 {

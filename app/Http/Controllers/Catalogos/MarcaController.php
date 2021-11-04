@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Catalogos;
 
+use App\Exports\CatalogosExport;
 use App\Http\Controllers\Controller;
 use App\Models\Empresa;
 use App\Models\Marca;
@@ -11,7 +12,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
 
 class MarcaController extends Controller
 {
@@ -58,6 +61,11 @@ class MarcaController extends Controller
             "marcas" => $marcas,
             "permisos" => $permisos
         ];
+
+
+
+
+
         return response()->json($data);
     }
 
@@ -72,11 +80,11 @@ class MarcaController extends Controller
         }
 
         $rules    = [
-            'marcas.nombre'    => 'required',
+            'marca.nombre'    => 'required',
         ];
 
         $messages = [
-            'marcas.nombre.required'        => 'El nombre es requerido',
+            'marca.nombre.required'        => 'El nombre es requerido',
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages = $messages);
@@ -86,12 +94,12 @@ class MarcaController extends Controller
                 'message' => $validator->errors()
             ], 404);
         }
-        if(isset($request->marcas['idcrypt']) and $request->marcas['idcrypt']){
-            $ma = Marca::find(Crypt::decrypt($request->marcas['idcrypt']));
+        if(isset($request->marca['idcrypt']) and $request->marca['idcrypt']){
+            $ma = Marca::find(Crypt::decrypt($request->marca['idcrypt']));
         }else{
             $ma = new Marca();
         }
-        $ma->nombre = $request->marcas['nombre'];
+        $ma->nombre = $request->marca['nombre'];
         $ma->empresaid =  Auth::user()->empresaid ?? 1;
         $ma->save();
 
@@ -125,6 +133,58 @@ class MarcaController extends Controller
         $ma = Marca::find($id);
         $ma->delete();
         return response()->json($ma);
+    }
+
+    public function exportar(Request $request){
+
+        $marcas = Marca::where('empresaid',Auth::user()->empresaid);
+
+        if (isset($request->search))
+        {
+            // 1 nombre, 2 telefono, 3 Dpi
+            switch ($request->item0) {
+                case '1' : $marcas = $marcas->where('nombre','like','%'.$request->datobuscar.'%');
+                    break;
+            }
+        }
+
+        $marcas = $marcas->get();
+
+        $dataExport = [];
+
+        foreach ($marcas as $u){
+            $dataExportInstance = [
+                "nombre" => $u->nombre
+            ];
+            array_push($dataExport, $dataExportInstance);
+
+        }
+        $header = ["nombre"];
+
+        $filename = 'marcas.xlsx';
+
+        Excel::store(new CatalogosExport(collect($dataExport), $header),$filename);
+
+        $file = Storage::get($filename);
+
+
+
+       /* if ($file) {
+           $fileLink = 'data:application/vnd.ms-excel;base64,' . base64_encode($file);
+           @chmod(Storage::disk('local')->path($filename), 0755);
+           @unlink(Storage::disk('local')->path($filename));
+        }*/
+
+        $fullPath = Storage::disk('public')->path($filename);
+        $storageURL = Storage::url($filename);
+
+        Log::info($storageURL);
+        Log::info($fullPath);
+        return $fullPath;
+
+       // return Excel::download(new CatalogosExport(collect($dataExport), $header),'marcas.xlsx'); //$fileLink; //(new CatalogosExport(collect($dataExport), $header))->download('marcas.xlsx');
+
+         //      return Excel::download(new CatalogosExport(collect($dataExport), $header),'marcas.xlsx');
     }
 
 }
