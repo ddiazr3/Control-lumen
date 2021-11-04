@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Catalogos;
 
+use App\Exports\CatalogosExport;
 use App\Http\Controllers\Controller;
 use App\Models\Categoria;
 use App\Models\Linea;
@@ -123,5 +124,35 @@ class CategoriaController extends Controller
         $categoria = Categoria::find($id);
         $categoria->delete();
         return response()->json($categoria);
+    }
+
+    public function exportar(Request $request){
+
+        $categorias = Categoria::where('empresaid',Auth::user()->empresaid);
+
+        if (isset($request->search))
+        {
+            // 1 nombre, 2 telefono, 3 Dpi
+            switch ($request->item0) {
+                case '1' : $categorias = $categorias->where('nombre','like','%'.$request->datobuscar.'%');
+                    break;
+            }
+        }
+
+        $categorias = $categorias->get();
+
+        $dataExport = [];
+
+        foreach ($categorias as $l){
+            $dataExportInstance = [
+                "categoria" => $l->nombre
+            ];
+            array_push($dataExport, $dataExportInstance);
+
+        }
+        $header = ["categoria"];
+
+        ob_end_clean();
+        return  (new CatalogosExport(collect($dataExport), $header))->download('categorias.xlsx');
     }
 }

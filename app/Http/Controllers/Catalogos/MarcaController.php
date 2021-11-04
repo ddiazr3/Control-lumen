@@ -161,11 +161,11 @@ class MarcaController extends Controller
         }
         $header = ["nombre"];
 
-        $filename = 'marcas.xlsx';
+        /*$filename = 'marcas.xlsx';
 
         Excel::store(new CatalogosExport(collect($dataExport), $header),$filename);
 
-        $file = Storage::get($filename);
+        $file = Storage::get($filename);*/
 
 
 
@@ -175,16 +175,14 @@ class MarcaController extends Controller
            @unlink(Storage::disk('local')->path($filename));
         }*/
 
-        $fullPath = Storage::disk('public')->path($filename);
-        $storageURL = Storage::url($filename);
-
-        Log::info($storageURL);
-        Log::info($fullPath);
-        return $fullPath;
-
-       // return Excel::download(new CatalogosExport(collect($dataExport), $header),'marcas.xlsx'); //$fileLink; //(new CatalogosExport(collect($dataExport), $header))->download('marcas.xlsx');
-
-         //      return Excel::download(new CatalogosExport(collect($dataExport), $header),'marcas.xlsx');
+//        $fullPath = Storage::disk('local')->path($filename);
+//        $storageURL = Storage::url($filename);
+//
+//        Log::info($storageURL);
+//        Log::info($fullPath);
+//        return $fullPath;
+        ob_end_clean();
+        return  (new CatalogosExport(collect($dataExport), $header))->download('marcas.xlsx');
     }
 
 }

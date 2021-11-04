@@ -66,16 +66,19 @@ $router->group(['middleware' => 'auth','prefix' => 'api'], function () use ($rou
     $router->post('lineas/{id}/eliminar','Catalogos\LineaController@eliminar');
     $router->get('lineas/catalogos','Catalogos\LineaController@catalogos');
     $router->get('lineas/getLinea/{marcaid}','Catalogos\LineaController@getLinea');
+    $router->post('lineas/exportar','Catalogos\LineaController@exportar');
 
     $router->get('categorias','Catalogos\CategoriaController@index');
     $router->post('categorias','Catalogos\CategoriaController@store');
     $router->get('categorias/{id}/edit','Catalogos\CategoriaController@edit');
     $router->post('categorias/{id}/eliminar','Catalogos\CategoriaController@eliminar');
+    $router->post('categorias/exportar','Catalogos\CategoriaController@exportar');
 
     $router->get('proveedores','Catalogos\ProveedorController@index');
     $router->post('proveedores','Catalogos\ProveedorController@store');
     $router->get('proveedores/{id}/edit','Catalogos\ProveedorController@edit');
     $router->post('proveedores/{id}/eliminar','Catalogos\ProveedorController@eliminar');
+    $router->post('proveedores/exportar','Catalogos\ProveedorController@exportar');
 
     $router->get('productos','Catalogos\ProductoController@index');
     $router->post('productos','Catalogos\ProductoController@store');
@@ -83,6 +86,7 @@ $router->group(['middleware' => 'auth','prefix' => 'api'], function () use ($rou
     $router->post('productos/{id}/eliminar','Catalogos\ProductoController@eliminar');
     $router->post('productos/{id}/activar','Catalogos\ProductoController@activar');
     $router->get('productos/catalogos','Catalogos\ProductoController@catalogos');
+    $router->post('productos/exportar','Catalogos\ProductoController@exportar');
 
 });
 

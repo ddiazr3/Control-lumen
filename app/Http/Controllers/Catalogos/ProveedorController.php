@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Catalogos;
 
+use App\Exports\CatalogosExport;
 use App\Http\Controllers\Controller;
 use App\Models\Categoria;
+use App\Models\Linea;
 use App\Models\Proveedor;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
@@ -129,5 +131,37 @@ class ProveedorController extends Controller
         $pr = Proveedor::find($id);
         $pr->delete();
         return response()->json($pr);
+    }
+
+    public function exportar(Request $request){
+
+        $pr = Proveedor::where('empresaid',Auth::user()->empresaid);
+
+        if (isset($request->search))
+        {
+            // 1 nombre, 2 telefono, 3 Dpi
+            switch ($request->item0) {
+                case '1' : $pr = $pr->where('nombre','like','%'.$request->datobuscar.'%');
+                    break;
+            }
+        }
+
+        $pr = $pr->get();
+
+        $dataExport = [];
+
+        foreach ($pr as $l){
+            $dataExportInstance = [
+                "proveedor" => $l->nombre,
+                "direccion" => $l->direccion,
+                "telefono" => $l->telefono
+            ];
+            array_push($dataExport, $dataExportInstance);
+
+        }
+        $header = ["proveedor","direccion","telefono"];
+
+        ob_end_clean();
+        return  (new CatalogosExport(collect($dataExport), $header))->download('proveedores.xlsx');
     }
 }

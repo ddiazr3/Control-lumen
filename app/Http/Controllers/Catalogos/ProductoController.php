@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Catalogos;
 
+use App\Exports\CatalogosExport;
 use App\Http\Controllers\Controller;
 use App\Models\Bodega;
 use App\Models\Categoria;
@@ -215,5 +216,44 @@ class ProductoController extends Controller
             "categoria" => $categorias
         ];
         return response()->json($data);
+    }
+
+    public function exportar(Request $request){
+
+        $pr = Producto::with(['proveedor','categoria','marca','linea','precio','stock'])->where('empresaid',Auth::user()->empresaid);
+
+        if (isset($request->search))
+        {
+            // 1 nombre, 2 telefono, 3 Dpi
+            switch ($request->item0) {
+                case '1' : $pr = $pr->where('nombre','like','%'.$request->datobuscar.'%');
+                    break;
+            }
+        }
+
+        $pr = $pr->get();
+
+        $dataExport = [];
+
+        foreach ($pr as $l){
+            $dataExportInstance = [
+                "producto" => $l->nombre,
+                "descripcion" => $l->descripcion,
+                "codigo" => $l->codigo,
+                "cantidad" => $l->stock->cantidad,
+                "precio" => $l->precio->precio,
+                "marca" => $l->marca->nombre,
+                "linea" => $l->linea->nombre,
+                "proveedor" => $l->proveedor->nombre,
+                "categoria" => $l->categoria->nombre,
+                "activo" => $l->activo ? 'Si':'No'
+            ];
+            array_push($dataExport, $dataExportInstance);
+
+        }
+        $header = ["Producto","Descripción","Código","Cantidad","Precio","Marca","Linea","Proveedor","Categoria","Activo"];
+
+        ob_end_clean();
+        return  (new CatalogosExport(collect($dataExport), $header))->download('productos.xlsx');
     }
 }

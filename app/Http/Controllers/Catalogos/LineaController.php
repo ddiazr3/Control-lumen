@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Catalogos;
 
+use App\Exports\CatalogosExport;
 use App\Http\Controllers\Controller;
 use App\Models\Categoria;
 use App\Models\Linea;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Svg\Tag\Line;
 
 class LineaController extends Controller
 {
@@ -148,5 +150,36 @@ class LineaController extends Controller
         $lineas = Linea::where('empresaid', Auth::user()->empresaid)->where('marcaid',$marcaid)->get();
 
         return response()->json($lineas);
+    }
+
+    public function exportar(Request $request){
+
+        $lineas = Linea::with('marca')->where('empresaid',Auth::user()->empresaid);
+
+        if (isset($request->search))
+        {
+            // 1 nombre, 2 telefono, 3 Dpi
+            switch ($request->item0) {
+                case '1' : $lineas = $lineas->where('nombre','like','%'.$request->datobuscar.'%');
+                    break;
+            }
+        }
+
+        $lineas = $lineas->get();
+
+        $dataExport = [];
+
+        foreach ($lineas as $l){
+            $dataExportInstance = [
+                "linea" => $l->nombre,
+                "marca" => $l->marca->nombre
+            ];
+            array_push($dataExport, $dataExportInstance);
+
+        }
+        $header = ["linea","marca"];
+
+        ob_end_clean();
+        return  (new CatalogosExport(collect($dataExport), $header))->download('lineas.xlsx');
     }
 }
