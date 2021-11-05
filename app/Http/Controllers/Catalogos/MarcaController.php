@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Catalogos;
 
 use App\Exports\CatalogosExport;
 use App\Http\Controllers\Controller;
+use App\Imports\CatalogosImport;
 use App\Models\Empresa;
 use App\Models\Marca;
 use App\Models\Marcas;
@@ -185,4 +186,30 @@ class MarcaController extends Controller
         return  (new CatalogosExport(collect($dataExport), $header))->download('marcas.xlsx');
     }
 
+    public function import(Request $request){
+        Log::info($request->file('file')->store('temp'));
+
+        if($request->hasFile('file')) {
+
+
+            $name = $request->file('file')->getClientOriginalName();
+            $exte = $request->file('file')->getClientOriginalExtension();
+//            Storage::disk('public')->putFileAs('images',$request->file('file'),$name);
+//            //forma de como obtener el documento
+//            // $contef = Storage::disk('public')->get("images/$name");
+//            $url = Storage::url("public/images/$name");
+
+            Excel::import(new CatalogosImport('marca',Auth::user()->empresaid),$request->file('file')->store('temp'));
+
+            $data = [
+                'name' => $name,
+                'extension' => $exte,
+            ];
+            return response()->json($data);
+        }else{
+                return response()->json([
+                    'message' => "No es un archivo"
+                ],405);
+        }
+    }
 }

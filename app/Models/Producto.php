@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Producto extends Model
 {
     protected $table = 'productos';
+    protected $fillable = ["nombre", "empresaid", "descripcion","codigo","proveedorid","marcaid","lineaid","categoriaid"];
 
     public function proveedor() {
         return $this->hasOne(Proveedor::class, 'id', 'proveedorid');

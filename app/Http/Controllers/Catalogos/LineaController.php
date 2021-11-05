@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Catalogos;
 
 use App\Exports\CatalogosExport;
 use App\Http\Controllers\Controller;
+use App\Imports\CatalogosImport;
 use App\Models\Categoria;
 use App\Models\Linea;
 use App\Models\Marca;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
 use Svg\Tag\Line;
 
 class LineaController extends Controller
@@ -181,5 +183,22 @@ class LineaController extends Controller
 
         ob_end_clean();
         return  (new CatalogosExport(collect($dataExport), $header))->download('lineas.xlsx');
+    }
+
+    public function import(Request $request){
+        if($request->hasFile('file')) {
+            $name = $request->file('file')->getClientOriginalName();
+            $exte = $request->file('file')->getClientOriginalExtension();
+            Excel::import(new CatalogosImport('linea',Auth::user()->empresaid),$request->file('file')->store('temp'));
+            $data = [
+                'name' => $name,
+                'extension' => $exte,
+            ];
+            return response()->json($data);
+        }else{
+            return response()->json([
+                'message' => "No es un archivo"
+            ],405);
+        }
     }
 }
