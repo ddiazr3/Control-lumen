@@ -10,6 +10,7 @@ use App\Models\Empresa;
 use App\Models\Modulo;
 use App\Models\ModuloPermiso;
 use App\Models\Permiso;
+use App\Models\PuntoVentas;
 use App\Models\Role;
 use App\Models\RoleUsuarios;
 use App\Models\Usuario;
@@ -113,7 +114,6 @@ class UsuarioController extends Controller
             'usuario.dpi'       => 'required|numeric',
             'usuario.telefono'  => 'required|numeric',
             'usuario.direccion' => 'required',
-            'usuario.empresaid' => 'required|min:1',
             'usuario.rolesid'   => 'required|min:1'
         ];
 
@@ -127,8 +127,6 @@ class UsuarioController extends Controller
             'usuario.telefono.required'      => 'El telefono es requerido',
             'usuario.telefono.numeric'       => 'El telefono es campo numerico',
             'usuario.direccion.required'     => 'La direccion es requerida',
-            'usuario.empresaid.required'     => 'La empresa es requerida',
-            'usuario.empresaid.min'          => 'Al menos debe seleccionar una empresa',
             'usuario.rolesid.required'       => 'El rol es requerido',
             'usuario.rolesid.min'            => 'Al menos debe seleccionar un rol'
         ];
@@ -152,7 +150,9 @@ class UsuarioController extends Controller
         $usuario->dpi = $request->usuario['dpi'];
         $usuario->telefono = $request->usuario['telefono'];
         $usuario->direccion = $request->usuario['direccion'];
-        $usuario->empresaid = $request->usuario['empresaid'];
+        $usuario->empresaid = Auth::user()->isGod() ? $request->usuario['empresaid'] : Auth::user()->empresaid;
+
+        $usuario->puntoventaid = Auth::user()->isGod() ? null :  $request->usuario['puntoventaid'];
         $usuario->usuariocreacionid =  isset($request->usuario['usuariocreacionid']) ? Crypt::decrypt($request->usuario['usuariocreacionid']) : null;
         $usuario->save();
 
@@ -193,18 +193,21 @@ class UsuarioController extends Controller
     public function catalogos(Request $request)
     {
 
+        $puntoVenta = null;
        if(Auth::user()->isGod()){
             $roles = Role::where('id','<>', 1)->get();
             $empresas = Empresa::all();
         }else{
             $roles = Role::where('id','<>', 1)->where('empresaid',Auth::user()->empresaid)->get();
             $empresas = Empresa::where('id',Auth::user()->empresaid)->get();
+            $puntoVenta = PuntoVentas::where('empresaid',Auth::user()->empresaid)->get();
         }
 
 
         $data = [
             "roles" => $roles,
-            "empresas" => $empresas
+            "empresas" => $empresas,
+            "puntoVenta" => $puntoVenta
         ];
 
         return response()->json($data);
@@ -310,14 +313,11 @@ class UsuarioController extends Controller
         $correo = $request->correo;
         $pass = $request->password;
 
-        Log::info($request);
         $usuario = Usuario::with([
             'roles' => function ($query){
                 $query->with('role_module_permisos');
             }
         ])->where('correo', $correo)->where('activo', true)->first();
-
-
 
         if(!$usuario){
             return response()->json([
@@ -333,8 +333,6 @@ class UsuarioController extends Controller
 
         $isPrimeraVes = false;
         $tokenR = null;
-
-        Log::info("es primera vez $usuario->primeraves ");
 
         if(!$usuario->primeraves){
             $tokenR = Str::random(32);
@@ -361,6 +359,7 @@ class UsuarioController extends Controller
             "idUsuarioCrypt" => Crypt::encrypt($usuario->id),
             "token" => $tok,
             "idsRoles" => $usuario->roleIds(),
+            "isGod" => $usuario->id == 1 ? true : false,
             "empresa" => [
                 "nombre" => $usuario->usuario ? $usuario->empresa->nombre : null,
                 "nit" => $usuario->usuario ? $usuario->empresa->nit : null,

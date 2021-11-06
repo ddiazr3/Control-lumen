@@ -3,6 +3,10 @@
 namespace App\Http\Controllers\Configuracion;
 
 use App\Http\Controllers\Controller;
+use App\Models\PrecioBodega;
+use App\Models\precioPuntoVenta;
+use App\Models\StockBodega;
+use App\Models\StockPuntoVenta;
 use Illuminate\Http\Request;
 use App\Models\Empresa;
 use App\Models\Producto;
@@ -61,10 +65,6 @@ class PuntoVentaController extends Controller
 
     public function store(Request $request){
 
-
-        Log::info($request);
-
-
         $permisos= Usuario::permisosUsuarioLogeado($this->path);
 
         if(!in_array('create',$permisos[0])){
@@ -76,7 +76,7 @@ class PuntoVentaController extends Controller
         $rules    = [
             'puntoventa.nombre'    => 'required',
             'puntoventa.direccion' => 'required',
-            'puntoventa.nit'       => 'required|numeric',
+            'puntoventa.nit'       => 'required',
             'puntoventa.telefono'  => 'required|numeric'
         ];
 
@@ -84,7 +84,6 @@ class PuntoVentaController extends Controller
             'puntoventa.nombre.required'        => 'El nombre es requerido',
             'puntoventa.direccion.required'     => 'La direccion es requerido',
             'puntoventa.nit.required'           => 'El nit es requerido',
-            'puntoventa.nit.numeric'            => 'El nit es campo numerico',
             'puntoventa.telefono.required'      => 'El telefono es requerido',
             'puntoventa.telefono.numeric'       => 'El telefono es campo numerico'
         ];
@@ -96,6 +95,23 @@ class PuntoVentaController extends Controller
                 'message' => $validator->errors()
             ], 404);
         }
+
+        //validamos las cantidades que solicitan
+        $pr = $request->puntoventa['productos'];
+        foreach ($pr as $p) {
+            if ($p['checked']) {
+
+                $stokBodega = StockBodega::where('productoid', $p['id'])->first();
+
+                if ($p['cantidad'] > $stokBodega->cantidad) {
+                    return response()->json([
+                        'message' => "Catindad del producto es mayor a la de bodega ".$p['nombre']
+                    ], 404);
+                }
+            }
+        }
+
+
         if(isset($request->puntoventa['idcrypt']) and $request->puntoventa['idcrypt']){
             $pv = PuntoVentas::find(Crypt::decrypt($request->puntoventa['idcrypt']));
         }else{
@@ -108,6 +124,41 @@ class PuntoVentaController extends Controller
         $pv->empresaid = Auth::user()->empresaid;
         $pv->save();
 
+
+        //eliminamos los registro que ya tenia
+        $stokPV = StockPuntoVenta::where('puntoventaid',$pv->id)->get();
+
+        if($stokPV){
+            $stokPV = StockPuntoVenta::where('puntoventaid',$pv->id)->delete();
+            $precioPV = precioPuntoVenta::where('puntoventaid',$pv->id)->delete();
+        }
+
+
+        //volvemos agregar los que vienen en el request
+
+
+        foreach ($pr as $p){
+            if($p['checked']){
+
+                $stokBodega = StockBodega::where('productoid', $p['id'])->first();
+                $stokBodega->cantidad = $stokBodega->cantidad - $p['cantidad'];
+                $stokBodega->update();
+
+                $stockPuntoVenta = new StockPuntoVenta();
+                $stockPuntoVenta->cantidad = $p['cantidad'];
+                $stockPuntoVenta->cantidad_bodega = $stokBodega->cantidad;
+                $stockPuntoVenta->productoid = $p['id'];
+                $stockPuntoVenta->puntoventaid = $pv->id;
+                $stockPuntoVenta->save();
+
+                $precioPuntoVenta = new precioPuntoVenta();
+                $precioPuntoVenta->precio = $p['precio'];
+                $precioPuntoVenta->precio_bodega = $p['precioBodega'];
+                $precioPuntoVenta->productoid = $p['id'];
+                $precioPuntoVenta->puntoventaid = $pv->id;
+                $precioPuntoVenta->save();
+            }
+        }
         return response()->json(200);
     }
 
@@ -125,10 +176,32 @@ class PuntoVentaController extends Controller
         $pv->idcrypt = Crypt::encrypt($id);
 
 
-        $productos = Producto::where('empresaid',$pv->empresaid)->get();
+        $productos = Producto::with(['precio','stock'])->where('empresaid',$pv->empresaid)->get();
 
+        $productoPuntosVentas = [];
+        foreach ($productos as $p){
 
-        return response()->json($pv);
+            $stockpv = StockPuntoVenta::where('productoid', $p->id)->where('puntoventaid',$pv->id)->first();
+            $preciopv = precioPuntoVenta::where('productoid', $p->id)->where('puntoventaid',$pv->id)->first();
+            $pr = [
+                "id" =>  $p->id,
+                "nombre" => $p->nombre,
+                "precioBodega" => $p->precio->precio,
+                "stockBodega" => $p->stock->cantidad,
+                "cantidad" => $stockpv->cantidad ?? 0,
+                "precio" => $preciopv->precio ?? 0.00,
+                "checked" => $preciopv ? true : false
+            ];
+
+            array_push($productoPuntosVentas, $pr);
+        }
+
+        $data = [
+            "productos" => $productoPuntosVentas,
+            "puntoventa" => $pv
+        ];
+
+        return response()->json($data);
     }
 
     public function eliminar($id)

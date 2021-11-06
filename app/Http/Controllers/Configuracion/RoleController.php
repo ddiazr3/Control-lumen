@@ -94,15 +94,12 @@ class RoleController extends Controller
         $rules    = [
             'role.nombre'    => 'required',
             'role.descripcion'  => 'required',
-            'role.empresaid' => 'required|min:1',
             'role.permisosIds'   => 'required|min:1'
         ];
 
         $messages = [
             'role.nombre.required'        => 'El nombre es requerido',
             'role.descripcion.required'   => 'La descripcion es requerido',
-            'role.empresaid.required'     => 'La empresa es requerida',
-            'role.empresaid.min'          => 'Al menos debe seleccionar una empresa',
             'role.permisosIds.required'   => 'Permisos requeridos',
             'role.permisosIds.min'        => 'Al menos debe seleccionar un permiso'
         ];
@@ -125,7 +122,7 @@ class RoleController extends Controller
         }
         $role->nombre = $request->role['nombre'];
         $role->descripcion = $request->role['descripcion'];
-        $role->empresaid = $request->role['empresaid'];
+        $role->empresaid = Auth::user()->isGod() ? $request->role['empresaid'] : Auth::user()->empresaid;
         $role->usuariocreacionid =  isset($request->role['usuariocreacionid']) ? Crypt::decrypt($request->role['usuariocreacionid']) : null;
         $role->save();
         //agregandoRol
