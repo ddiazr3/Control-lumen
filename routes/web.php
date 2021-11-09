@@ -92,6 +92,9 @@ $router->group(['middleware' => 'auth','prefix' => 'api'], function () use ($rou
     $router->get('productos/catalogos','Catalogos\ProductoController@catalogos');
     $router->post('productos/exportar','Catalogos\ProductoController@exportar');
     $router->post('productos/import','Catalogos\ProductoController@import');
+    $router->post('productos/getProductos','Catalogos\ProductoController@getProductos');
+
+    $router->get('compras','Principal\ComprasController@index');
 
 });
 

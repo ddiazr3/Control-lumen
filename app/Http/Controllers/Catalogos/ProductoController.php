@@ -289,4 +289,36 @@ class ProductoController extends Controller
             ],405);
         }
     }
+
+    public function getProductos(Request $request)
+    {
+
+        $proveedorid = $request->proveedorid;
+        $categoriaid = $request->categoriaid;
+        $marcaid = $request->marcaid;
+        $lineaid = $request->lineaid;
+
+        $productos = Producto::with(['precio','stock','proveedor','categoria','marca','linea']);
+
+        if($proveedorid){
+            $productos = $productos->where('proveedorid',$proveedorid);
+        }
+
+        if($categoriaid){
+            $productos = $productos->where('categoriaid',$categoriaid);
+        }
+
+        if($marcaid){
+            $productos = $productos->where('marcaid',$marcaid);
+        }
+
+        if($lineaid){
+            $productos = $productos->where('lineaid',$lineaid);
+        }
+
+        $productos = $productos->where('empresaid', Auth::user()->empresaid)->get();
+
+        return response()->json($productos);
+
+    }
 }
