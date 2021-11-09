@@ -32,4 +32,12 @@ class Producto extends Model
     public function stock() {
         return $this->hasOne(StockBodega::class, 'productoid', 'id');
     }
+
+    public function preciopv() {
+        return $this->hasOne(precioPuntoVenta::class, 'productoid', 'id');
+    }
+
+    public function stockpv() {
+        return $this->hasOne(StockPuntoVenta::class, 'productoid', 'id');
+    }
 }

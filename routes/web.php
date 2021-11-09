@@ -93,8 +93,12 @@ $router->group(['middleware' => 'auth','prefix' => 'api'], function () use ($rou
     $router->post('productos/exportar','Catalogos\ProductoController@exportar');
     $router->post('productos/import','Catalogos\ProductoController@import');
     $router->post('productos/getProductos','Catalogos\ProductoController@getProductos');
+    $router->post('productos/getProductosVenta','Catalogos\ProductoController@getProductosVenta');
 
     $router->get('compras','Principal\ComprasController@index');
+    $router->post('compras','Principal\ComprasController@store');
+
+    $router->post('ventas','Principal\VentasController@store');
 
 });
 

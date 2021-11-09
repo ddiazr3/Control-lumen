@@ -13,7 +13,9 @@ use App\Models\Marca;
 use App\Models\PrecioBodega;
 use App\Models\Producto;
 use App\Models\Proveedor;
+use App\Models\PuntoVentas;
 use App\Models\StockBodega;
+use App\Models\StockPuntoVenta;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -319,6 +321,49 @@ class ProductoController extends Controller
         $productos = $productos->where('empresaid', Auth::user()->empresaid)->get();
 
         return response()->json($productos);
+
+    }
+
+    public function getProductosVenta(Request $request)
+    {
+
+       $select = $request->select == "producto" ? "nombre": "codigo";
+       $texto = $request->texto;
+
+       if($texto == null or $texto == ""){
+           return response()->json([]);
+       }
+
+       if(Auth::user()->puntoventaid){
+           $producto = PuntoVentas::select('ppv.precio','spv.cantidad','p.id','p.nombre')
+                           ->join('stock_punto_ventas as spv','spv.puntoventaid','=','punto_ventas.id')
+                           ->join('precio_punto_ventas as ppv','ppv.bodegaid','=','punto_ventas.id')
+                           ->join('productos as p', function ($join){
+                               $join->on('p.id','=','ppv.productoid');
+                               $join->on('p.id','=','spv.productoid');
+                           })
+                           ->groupBy(['ppv.precio','spv.cantidad','p.id','p.nombre'])
+                           ->where("p.$select","like","%$texto%")
+                           ->where('punto_ventas.id',Auth::user()->puntoventaid)
+                           ->get();
+
+
+       }else{
+
+           $producto = Bodega::select('pb.precio','sb.cantidad','p.id','p.nombre')
+                            ->join('stock_bodegas as sb','sb.bodegaid','=','bodegas.id')
+                            ->join('precio_bodega as pb','pb.bodegaid','=','bodegas.id')
+                            ->join('productos as p', function ($join){
+                                $join->on('p.id','=','sb.productoid');
+                                $join->on('p.id','=','pb.productoid');
+                            })
+                            ->groupBy(['pb.precio','sb.cantidad','p.id','p.nombre'])
+                            ->where("p.$select","like","%$texto%")
+                            ->where('bodegas.empresaid',Auth::user()->empresaid)
+                            ->get();
+       }
+
+        return response()->json($producto);
 
     }
 }

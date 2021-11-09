@@ -37,17 +37,17 @@ class PuntoVentaController extends Controller
             switch ($request->item0) {
                 case '1' :
                     if(Auth::user()->isGod()){
-                        $puntoventas = PuntoVentas::where('nombre','like','%'.$request->datobuscar.'%')->paginate(10);
+                        $puntoventas = PuntoVentas::with('empresa')->where('nombre','like','%'.$request->datobuscar.'%')->paginate(10);
                     }else{
-                        $puntoventas = PuntoVentas::where('nombre','like','%'.$request->datobuscar.'%')->where('empresaid',Auth::user()->empresaid)->paginate(10);
+                        $puntoventas = PuntoVentas::with('empresa')->where('nombre','like','%'.$request->datobuscar.'%')->where('empresaid',Auth::user()->empresaid)->paginate(10);
                     }
                     break;
             }
         }else{
             if(Auth::user()->isGod()){
-                $puntoventas = PuntoVentas::paginate(10);
+                $puntoventas = PuntoVentas::with('empresa')->paginate(10);
             }else{
-                $puntoventas = PuntoVentas::where('empresaid',Auth::user()->empresaid)->paginate(10);
+                $puntoventas = PuntoVentas::with('empresa')->where('empresaid',Auth::user()->empresaid)->paginate(10);
             }
 
         }

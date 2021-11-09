@@ -4,10 +4,14 @@ namespace App\Http\Controllers\Principal;
 
 use App\Http\Controllers\Controller;
 use App\Models\Categoria;
+use App\Models\Compra;
+use App\Models\DetalleCompra;
 use App\Models\Linea;
 use App\Models\Marca;
 use App\Models\Proveedor;
+use App\Models\StockBodega;
 use App\Models\Usuario;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
@@ -20,7 +24,7 @@ class ComprasController extends Controller
 
     public function index(Request $request)
     {
-        Log::info('llego');
+
         $permisos= Usuario::permisosUsuarioLogeado($this->path);
         $proveedores = [];
         $categorias = [];
@@ -54,6 +58,43 @@ class ComprasController extends Controller
         return response()->json($data);
     }
 
+    public function store(Request $request){
 
+        $totalpagado = $request->totalpagado;
+        $detalleCompra = $request->detalleCompras;
+
+      //creando la venta
+        $compra = new Compra();
+        $compra->fechacompra = Carbon::now();
+        $compra->totalpagado = $totalpagado;
+        $compra->usuarioid = Auth::id();
+        $compra->empresaid = Auth::user()->empresaid;
+        $compra->estadocompraid = 2;
+        $compra->save();
+
+        //creando el detalle de venta
+        foreach ($detalleCompra as $item) {
+            $detallecompraInstance = new DetalleCompra();
+            $detallecompraInstance->productoid = $item['id'];
+            $detallecompraInstance->cantidad = $item['cantidad'];
+            $detallecompraInstance->precio = $item['precio'];
+            $detallecompraInstance->compraid = $compra->id;
+            $detallecompraInstance->save();
+        }
+
+        //quitando del stock lo vendido
+
+            foreach ($detalleCompra as $item) {
+                $stock = StockBodega::
+                where('productoid',$item['id'])
+                    ->first();
+                $stock->cantidad = $stock->cantidad +  $item['cantidad'];
+                $stock->update();
+            }
+
+
+        return response()->json("ok");
+
+    }
 
 }

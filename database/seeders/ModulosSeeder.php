@@ -22,7 +22,8 @@ class ModulosSeeder extends Seeder
         /**
          * En este comentario colocar el ultimo Id ingresado por favor(sirve para llevar un mejor orden en ModuloPermisosSeeder.php)
          * Y para que no se corran los ids de permisos de perfiles asignados
-         *//
+         * ID = 14
+         */
 
         $this->add(1,'principal','Principal','mdi-view-dashboard',100,'/principal');
         $this->add(2,'ventas','Ventas','mdi-alpha-p-circle',300,'/ventas');
