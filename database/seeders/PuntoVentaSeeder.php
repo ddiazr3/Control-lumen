@@ -17,10 +17,13 @@ class PuntoVentaSeeder extends Seeder
 
         //se insert las empresas
         $this->add(1, ' ',' '," ", " ", true, 1);
+        //Empresa 2
         $this->add(2, ' ',' '," ", " ", true, 2);
         $this->add(3, ' ',' '," ", " ", false, 2);
         $this->add(4, ' ',' '," ", " ", false, 2);
         $this->add(5, ' ',' '," ", " ", false, 2);
+        //Empresa 3
+       // $this->add(6, ' ',' '," ", " ", false, 3);
 
         DB::table('punto_ventas')->insert($this->inserts);
         DB::statement('UPDATE punto_ventas SET created_at=NOW(), updated_at=NOW()');

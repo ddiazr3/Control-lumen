@@ -17,7 +17,7 @@ class EmpresaSeeder extends Seeder
         //se insert las empresas
         $this->add(1, 'Empresa Pruebas','Guatemala'," ", "58403313", true, false, 0);
         $this->add(2, 'Empresa Pruebas Dos','Guatemala'," ", "58443311", true, true, 3);
-
+       // $this->add(3, 'Empresa Pruebas Tres','Guatemala'," ", "58403313", true, false, 0);
         DB::table('empresa')->insert($this->inserts);
         DB::statement('UPDATE empresa SET created_at=NOW(), updated_at=NOW()');
     }

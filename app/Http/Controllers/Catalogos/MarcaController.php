@@ -47,7 +47,9 @@ class MarcaController extends Controller
             }
         }else{
             if(Auth::user()->isGod()){
+                Log::info("god");
                 $marcas = Marca::paginate(10);
+
             }else{
                 $marcas = Marca::where('empresaid',Auth::user()->empresaid)->paginate(10);
             }
@@ -62,10 +64,6 @@ class MarcaController extends Controller
             "marcas" => $marcas,
             "permisos" => $permisos
         ];
-
-
-
-
 
         return response()->json($data);
     }

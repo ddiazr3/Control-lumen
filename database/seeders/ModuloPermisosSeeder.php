@@ -33,6 +33,9 @@ class ModuloPermisosSeeder extends Seeder
         $this->add(12);
         $this->add(13);
         $this->add(14);
+        //padre de estos no se colocan
+        $this->add(16,[1]);
+        $this->add(17,[1]);
         DB::table('modules_permisos')->insert($this->inserts);
         DB::statement('UPDATE modules_permisos SET created_at=NOW(), updated_at=NOW()');
     }

@@ -335,35 +335,107 @@ class ProductoController extends Controller
        }
 
        if(Auth::user()->puntoventaid){
-           $producto = PuntoVentas::select('ppv.precio','spv.cantidad','p.id','p.nombre')
-                           ->join('stock_punto_ventas as spv','spv.puntoventaid','=','punto_ventas.id')
-                           ->join('precio_punto_ventas as ppv','ppv.bodegaid','=','punto_ventas.id')
-                           ->join('productos as p', function ($join){
-                               $join->on('p.id','=','ppv.productoid');
-                               $join->on('p.id','=','spv.productoid');
-                           })
-                           ->groupBy(['ppv.precio','spv.cantidad','p.id','p.nombre'])
-                           ->where("p.$select","like","%$texto%")
-                           ->where('punto_ventas.id',Auth::user()->puntoventaid)
-                           ->get();
 
+           $puntoventa = PuntoVentas::find(Auth::user()->puntoventaid);
+
+           if(!$puntoventa->activo){
+               return response()->json([]);
+           }
+           if($puntoventa->igualprincipal){
+               $producto = $this->productosBodega($select,$texto);
+           }else{
+               $producto = $this->productosPuntoVenta($select,$texto);
+           }
 
        }else{
-
-           $producto = Bodega::select('pb.precio','sb.cantidad','p.id','p.nombre')
-                            ->join('stock_bodegas as sb','sb.bodegaid','=','bodegas.id')
-                            ->join('precio_bodega as pb','pb.bodegaid','=','bodegas.id')
-                            ->join('productos as p', function ($join){
-                                $join->on('p.id','=','sb.productoid');
-                                $join->on('p.id','=','pb.productoid');
-                            })
-                            ->groupBy(['pb.precio','sb.cantidad','p.id','p.nombre'])
-                            ->where("p.$select","like","%$texto%")
-                            ->where('bodegas.empresaid',Auth::user()->empresaid)
-                            ->get();
+           $producto = $this->productosBodega($select,$texto);
        }
 
         return response()->json($producto);
 
     }
+
+    private function productosBodega($select,$texto)
+    {
+        $producto = Bodega::select('pb.precio','sb.cantidad','p.id','p.nombre')
+            ->join('stock_bodegas as sb','sb.bodegaid','=','bodegas.id')
+            ->join('precio_bodega as pb','pb.bodegaid','=','bodegas.id')
+            ->join('productos as p', function ($join){
+                $join->on('p.id','=','sb.productoid');
+                $join->on('p.id','=','pb.productoid');
+            })
+            ->groupBy(['pb.precio','sb.cantidad','p.id','p.nombre'])
+            ->where("p.$select","like","%$texto%")
+            ->where('bodegas.empresaid',Auth::user()->empresaid)
+            ->get();
+
+        return $producto;
+    }
+
+    private function productosPuntoVenta($select,$texto)
+    {
+        $producto = PuntoVentas::select('ppv.precio','spv.cantidad','p.id','p.nombre')
+            ->join('stock_punto_ventas as spv','spv.puntoventaid','=','punto_ventas.id')
+            ->join('precio_punto_ventas as ppv','ppv.puntoventaid','=','punto_ventas.id')
+            ->join('productos as p', function ($join){
+                $join->on('p.id','=','ppv.productoid');
+                $join->on('p.id','=','spv.productoid');
+            })
+            ->groupBy(['ppv.precio','spv.cantidad','p.id','p.nombre'])
+            ->where("p.$select","like","%$texto%")
+            ->where('punto_ventas.id',Auth::user()->puntoventaid)
+            ->get();
+        return $producto;
+    }
+
+    public function saveFaker(Request $request)
+    {
+        //marca 1
+        // http://localhost:5051/api/productos/savefaker?marcaid=1&lineaid=1&proveedorid=1&categoriaid=1&empresaid=1&bodegaid=1&cantidad=25
+        //marca 2
+        //http://localhost:5051/api/productos/savefaker?marcaid=2&lineaid=0&proveedorid=1&categoriaid=1&empresaid=1&bodegaid=1&cantidad=25
+
+        //cambia la marca y el proveedor
+        //http://localhost:5051/api/productos/savefaker?marcaid=7&lineaid=0&proveedorid=2&categoriaid=1&empresaid=1&bodegaid=1&cantidad=25
+
+        //cambios de empresa
+        //http://localhost:5051/api/productos/savefaker?marcaid=25&lineaid=0&proveedorid=3&categoriaid=3&empresaid=2&bodegaid=2&cantidad=25
+
+        $marcaid = $request->marcaid;
+        $proveedorid = $request->proveedorid;
+        $categoriaid = $request->categoriaid;
+        $lineaid = $request->lineaid;
+        $empresaid = $request->empresaid;
+        $bodegaid = $request->bodegaid;
+        $cantidad = $request->cantidad;
+
+        for ($i = 0; $i < $cantidad; $i++){
+            $producto = new Producto();
+            $producto->nombre = "Producto $i";
+            $producto->descripcion = "Descripcion $i";
+            $producto->proveedorid = $proveedorid;
+            $producto->categoriaid = $categoriaid;
+            $producto->marcaid = $marcaid;
+            $producto->lineaid = $lineaid != 0 ? $lineaid : null;
+            $producto->empresaid = $empresaid;
+            $producto->save();
+
+            $catidadB = new StockBodega();
+            $catidadB->cantidad = 100;
+            $catidadB->productoid = $producto->id;
+            $catidadB->bodegaid = $bodegaid;
+            $catidadB->save();
+
+
+            $precioB = new precioBodega();
+            $precioB->precio = 1000;
+            $precioB->productoid = $producto->id;
+            $precioB->bodegaid = $bodegaid;
+            $precioB->save();
+        }
+
+        return response()->json("ok");
+
+    }
+
 }

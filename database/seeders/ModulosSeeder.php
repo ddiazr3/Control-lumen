@@ -42,6 +42,10 @@ class ModulosSeeder extends Seeder
         $this->add(12, 'categorias','Categorías','mdi-alpha-c-circle',10300,'/catalogos/categorias',$j);
         $this->add(13, 'proveedores','Proveedores','mdi-alpha-p-circle',10400,'/catalogos/proveedores',$j);
         $this->add(14,'productos','Productos','mdi-alpha-p-circle',10500,'/catalogos/productos',$j);
+        $k = $j + 6;
+        $this->add(15,'reportes','Reportes','mdi-finance',2000);
+        $this->add(16,'compras','Compras','mdi-shopping',2100,'/reportes/compras',$k);
+        $this->add(17,'ventas','Ventas','mdi-cart',2200,'/reportes/ventas',$k);
 
         DB::table('modulos')->insert($this->inserts);
         DB::statement('UPDATE modulos SET created_at=NOW(), updated_at=NOW()');

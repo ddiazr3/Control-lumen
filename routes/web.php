@@ -97,8 +97,13 @@ $router->group(['middleware' => 'auth','prefix' => 'api'], function () use ($rou
 
     $router->get('compras','Principal\ComprasController@index');
     $router->post('compras','Principal\ComprasController@store');
+    $router->get('reportes/compras','Principal\ComprasController@reporte');
+    $router->post('reportes/compras/exportar','Principal\ComprasController@exportar');
 
+    $router->get('reportes/ventas','Principal\VentasController@index');
+    $router->post('reportes/ventas/exportar','Principal\VentasController@exportar');
     $router->post('ventas','Principal\VentasController@store');
+
 
 });
 
@@ -107,4 +112,5 @@ $router->post('api/usuarios/login','Configuracion\UsuarioController@login');
 $router->post('api/usuarios/logout','Configuracion\UsuarioController@logout');
 $router->post('api/usuarios/confirmacioncorreo','Configuracion\UsuarioController@confirmacioncorreo');
 $router->post('api/usuarios/passwordchange/{token}','Configuracion\UsuarioController@passwordchange');
+$router->get('api/productos/savefaker','Catalogos\ProductoController@saveFaker');
 

@@ -2,6 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Models\Categoria;
+use App\Models\Linea;
+use App\Models\Marca;
+use App\Models\Producto;
+use App\Models\Proveedor;
 use App\Models\Usuario;
 use Illuminate\Database\Seeder;
 
@@ -14,6 +19,9 @@ class FakeUsuarioSeeder extends Seeder
      */
     public function run()
     {
-        Usuario::factory(1000)->create();
+       // Marca::factory(500)->create();
+       // Linea::factory(20)->create();
+       // Categoria::factory(20)->create();
+       // Proveedor::factory(50)->create();
     }
 }

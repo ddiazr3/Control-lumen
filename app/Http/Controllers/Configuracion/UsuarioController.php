@@ -152,7 +152,7 @@ class UsuarioController extends Controller
         $usuario->direccion = $request->usuario['direccion'];
         $usuario->empresaid = Auth::user()->isGod() ? $request->usuario['empresaid'] : Auth::user()->empresaid;
 
-        $usuario->puntoventaid = Auth::user()->isGod() ? null :  $request->usuario['puntoventaid'];
+        $usuario->puntoventaid = Auth::user()->isGod() ? null : (isset($request->usuario['puntoventaid']) ? $request->usuario['puntoventaid'] : null);
         $usuario->usuariocreacionid =  isset($request->usuario['usuariocreacionid']) ? Crypt::decrypt($request->usuario['usuariocreacionid']) : null;
         $usuario->save();
 
@@ -371,7 +371,10 @@ class UsuarioController extends Controller
         $validateMP = [];
 
         foreach ($usuario->roles as $u){
-            $roleModulePermiso = ModuloPermiso::whereIn('id',$u->modules_permisos_ids())->orderBy('moduloid')->get();
+            $roleModulePermiso = ModuloPermiso::select('modules_permisos.id','modules_permisos.moduloid','modules_permisos.permisoid')
+                ->whereIn('modules_permisos.id',$u->modules_permisos_ids())
+                ->join('modulos as m','m.id','=','modules_permisos.moduloid')
+                ->orderBy('m.orden')->get();
 
 
 
@@ -407,12 +410,10 @@ class UsuarioController extends Controller
                     }
 
                     if($modulo->padreId){
-
                         $hijos = [];
                         if($modulo->padreId != $idpadre){
                             $idpadre = $modulo->padreId;
                             $moduloPadre = Modulo::with('hijos')->find($modulo->padreId);
-
 
                             foreach ($moduloPadre->hijos as $mp){
                                 $modulo = Modulo::find($mp->id);
@@ -423,7 +424,6 @@ class UsuarioController extends Controller
                                     ->toArray();
 
                                 if($roleModulePermisoI){
-
                                     $itemHijo =
                                         [
                                             "title"     => $modulo->title,
@@ -432,9 +432,7 @@ class UsuarioController extends Controller
                                         ];
                                     array_push($hijos,$itemHijo);
                                 }
-
                             }
-
                             $itemPadre =
                                 [
                                     "title"     => $moduloPadre->title,
@@ -443,12 +441,8 @@ class UsuarioController extends Controller
                                 ];
                             $hijos = [];
                             array_push($modulosPermisos,$itemPadre);
-
                         }
-
-
                    }else{
-
                         $item =
                             [
                                 "title"     => $modulo->title,

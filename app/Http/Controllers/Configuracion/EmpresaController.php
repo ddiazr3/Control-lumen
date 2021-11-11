@@ -75,7 +75,7 @@ class EmpresaController extends Controller
         $rules    = [
             'empresa.nombre'    => 'required',
             'empresa.direccion' => 'required',
-            'empresa.nit'       => 'required|numeric',
+            'empresa.nit'       => 'required',
             'empresa.telefono'  => 'required|numeric'
         ];
 
@@ -83,7 +83,6 @@ class EmpresaController extends Controller
             'empresa.nombre.required'        => 'El nombre es requerido',
             'empresa.direccion.required'     => 'La direccion es requerido',
             'empresa.nit.required'           => 'El nit es requerido',
-            'empresa.nit.numeric'            => 'El nit es campo numerico',
             'empresa.telefono.required'      => 'El telefono es requerido',
             'empresa.telefono.numeric'       => 'El telefono es campo numerico'
         ];
@@ -104,7 +103,7 @@ class EmpresaController extends Controller
         $empr->direccion = $request->empresa['direccion'];
         $empr->nit = $request->empresa['nit'];
         $empr->telefono = $request->empresa['telefono'];
-        $empr->usuariocreacionid = Auth::user()->empresaid;
+        $empr->usuariocreacionid = Auth::id();
         $empr->logo = isset($request->empresa['logo']) ? $request->empresa['logo'] : null;
         $empr->save();
 
